@@ -86,7 +86,7 @@ function App() {
               <ImageUploader
                 key={`test-${clearVersion}`}
                 label="Test Image"
-                sublabel="| Subject"
+                sublabel="|Subject"
                 onImageSelect={handleTestSelect}
                 image={testImage}
                 id="test-uploader"
