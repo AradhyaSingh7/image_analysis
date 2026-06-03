@@ -1,0 +1,185 @@
+/* ===== Comparison Section ===== */
+.comparison {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+  max-width: 720px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.comparison__header {
+  text-align: center;
+}
+
+.comparison__title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.02em;
+  margin-bottom: var(--space-xs);
+}
+
+.comparison__desc {
+  font-size: 0.82rem;
+  color: var(--text-tertiary);
+  font-weight: 400;
+}
+
+/* ===== Container ===== */
+.comparison__container {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  border: 1.5px solid var(--border-medium);
+  background: var(--bg-secondary);
+  cursor: col-resize;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: none;
+  transition: border-color var(--transition-base), box-shadow var(--transition-base);
+}
+
+.comparison__container:hover {
+  border-color: var(--border-accent);
+  box-shadow: var(--shadow-glow);
+}
+
+.comparison__container--dragging {
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 50px rgba(14, 165, 233, 0.2);
+}
+
+.comparison__container:focus-visible {
+  outline: 2px solid var(--accent-primary);
+  outline-offset: 3px;
+}
+
+/* ===== Image Layers ===== */
+.comparison__image-layer {
+  position: absolute;
+  inset: 0;
+}
+
+.comparison__image-layer img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+  pointer-events: none;
+  background: var(--bg-secondary);
+  padding: var(--space-sm);
+}
+
+.comparison__image-layer--reference {
+  z-index: 1;
+}
+
+.comparison__image-layer--test {
+  z-index: 2;
+}
+
+/* ===== Labels ===== */
+.comparison__label {
+  position: absolute;
+  top: var(--space-md);
+  z-index: 5;
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  font-size: 0.6rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  transition: opacity var(--transition-base);
+  pointer-events: none;
+  backdrop-filter: blur(8px);
+}
+
+.comparison__label--ref {
+  left: var(--space-md);
+  background: rgba(14, 165, 233, 0.2);
+  border: 1px solid rgba(14, 165, 233, 0.3);
+  color: var(--accent-secondary);
+}
+
+.comparison__label--test {
+  right: var(--space-md);
+  background: rgba(251, 191, 36, 0.15);
+  border: 1px solid rgba(251, 191, 36, 0.25);
+  color: var(--warning);
+}
+
+/* ===== Slider ===== */
+.comparison__slider {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  z-index: 10;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  pointer-events: none;
+}
+
+.comparison__slider-line {
+  flex: 1;
+  width: 2px;
+  background: rgba(255, 255, 255, 0.7);
+  box-shadow: 0 0 8px rgba(0, 0, 0, 0.5);
+}
+
+.comparison__slider-handle {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 33px;
+  height: 33px;
+  border-radius: 50%;
+  background: white;
+  border: 2px solid rgba(255, 255, 255, 0.9);
+  box-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.3),
+    0 0 15px rgba(14, 165, 233, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #1a1d2b;
+  pointer-events: none;
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.comparison__container:hover .comparison__slider-handle,
+.comparison__container--dragging .comparison__slider-handle {
+  transform: translateY(-50%) scale(1.1);
+  box-shadow:
+    0 4px 16px rgba(0, 0, 0, 0.4),
+    0 0 30px rgba(14, 165, 233, 0.25);
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 768px) {
+  .comparison__container {
+    aspect-ratio: 4 / 3;
+  }
+
+  .comparison__title {
+    font-size: 1rem;
+  }
+
+  .comparison__desc {
+    font-size: 0.78rem;
+  }
+
+  .comparison__slider-handle {
+    width: 28px;
+    height: 28px;
+  }
+
+  .comparison__label {
+    font-size: 0.55rem;
+    padding: 3px 8px;
+  }
+}
