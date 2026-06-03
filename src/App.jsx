@@ -69,7 +69,7 @@ function App() {
               <ImageUploader
                 key={`reference-${clearVersion}`}
                 label="Reference Image"
-                sublabel="Original / Baseline"
+                sublabel="| Baseline"
                 onImageSelect={handleReferenceSelect}
                 image={referenceImage}
                 id="reference-uploader"
@@ -86,7 +86,7 @@ function App() {
               <ImageUploader
                 key={`test-${clearVersion}`}
                 label="Test Image"
-                sublabel="Modified / Post-change"
+                sublabel="| Subject"
                 onImageSelect={handleTestSelect}
                 image={testImage}
                 id="test-uploader"
