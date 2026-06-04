@@ -9,7 +9,9 @@ const METRIC_PILLS = [
   { icon: '◉', label: 'Noise' },
   { icon: '◐', label: 'Exposure' },
   { icon: '◑', label: 'Color Accuracy' },
-  { icon: '◇', label: 'Contrast' },
+  { icon: '⬡', label: 'Blur Detect' },
+  { icon: '◎', label: 'Similarity' },
+  { icon: '▤', label: 'Dynamic Range' },
 ];
 
 function App() {
