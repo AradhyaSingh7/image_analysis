@@ -169,7 +169,7 @@ The frontend will send a `POST /analyze` request with two image files and receiv
 
 ---
 
-## Roadmap
+## Roadmap: 
 
 - [ ] Backend FastAPI server with `/analyze` endpoint
 - [ ] Full metric computation (sharpness, noise, SSIM, colour accuracy, dynamic range)
