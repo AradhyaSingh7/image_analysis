@@ -1,0 +1,627 @@
+/* =========================================================
+   views.css — shared styles for all metric view components
+   ========================================================= */
+
+/* ===== Base metric-view layout ===== */
+.metric-view {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  animation: viewFadeIn 0.3s ease both;
+}
+
+@keyframes viewFadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ===== Hero — large ref vs test numbers ===== */
+.metric-view__hero {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+}
+
+.hero-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  flex: 1;
+  min-width: 0;
+}
+
+.hero-stat__label {
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-tertiary);
+}
+
+.hero-stat__value {
+  font-size: clamp(2rem, 5vw, 2.8rem);
+  font-weight: 800;
+  font-family: var(--font-mono);
+  line-height: 1;
+  letter-spacing: -0.03em;
+}
+
+.hero-stat__unit {
+  font-size: 0.62rem;
+  color: var(--text-tertiary);
+  font-family: var(--font-mono);
+}
+
+/* Hero divider */
+.hero-divider {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.hero-divider__line {
+  width: 1px;
+  height: 20px;
+  background: linear-gradient(to bottom, transparent, rgba(255,255,255,0.15), transparent);
+}
+
+.hero-divider__vs {
+  font-size: 0.58rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  color: var(--text-tertiary);
+}
+
+/* ===== Bars wrapper ===== */
+.metric-view__bars {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.025);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: var(--radius-lg);
+}
+
+/* ===== Section label ===== */
+.metric-view__section-label {
+  font-size: 0.62rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-tertiary);
+}
+
+/* ===== Hint text ===== */
+.metric-view__hint {
+  font-size: 0.7rem;
+  color: var(--text-tertiary);
+  line-height: 1.5;
+  border-left: 2px solid rgba(255,255,255,0.08);
+  padding-left: 10px;
+}
+
+/* ===== Verdict chips ===== */
+.verdict-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  border-radius: var(--radius-full);
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+}
+
+.verdict-chip--pass {
+  background: rgba(52, 211, 153, 0.12);
+  border: 1px solid rgba(52, 211, 153, 0.3);
+  color: #34d399;
+}
+
+.verdict-chip--fail {
+  background: rgba(248, 113, 113, 0.12);
+  border: 1px solid rgba(248, 113, 113, 0.3);
+  color: #f87171;
+}
+
+.verdict-chip--warn {
+  background: rgba(251, 191, 36, 0.12);
+  border: 1px solid rgba(251, 191, 36, 0.3);
+  color: #fbbf24;
+}
+
+/* ===== Color utilities ===== */
+.text-good { color: #34d399; }
+.text-bad  { color: #f87171; }
+.text-warn { color: #fbbf24; }
+
+/* ===== Noise — channel cards ===== */
+.metric-view__channel-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.channel-card {
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid color-mix(in srgb, var(--ch-color) 20%, transparent);
+  border-radius: var(--radius-md);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.channel-card__label {
+  font-size: 0.68rem;
+  font-weight: 800;
+  color: var(--ch-color);
+  font-family: var(--font-mono);
+  letter-spacing: 0.06em;
+}
+
+.channel-card__values {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.channel-card__val {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.68rem;
+  font-family: var(--font-mono);
+  color: var(--text-secondary);
+}
+
+.channel-card__tag {
+  font-size: 0.52rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--text-tertiary);
+}
+
+/* ===== Blur badges ===== */
+.blur-badges {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+/* ===== Exposure — gauge ===== */
+.metric-view__gauges {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 32px;
+}
+
+.brightness-gauge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.brightness-gauge__label {
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+/* ===== Exposure — percentile strip ===== */
+.percentile-strips {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.percentile-strip {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.percentile-strip__tag {
+  font-size: 0.56rem;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  letter-spacing: 0.08em;
+  width: 28px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.percentile-strip__bar {
+  flex: 1;
+  height: 10px;
+  background: linear-gradient(to right, #111 0%, #555 50%, #eee 100%);
+  border-radius: var(--radius-full);
+  position: relative;
+  opacity: 0.75;
+}
+
+.percentile-strip__marker {
+  position: absolute;
+  top: -2px;
+  width: 3px;
+  height: 14px;
+  border-radius: 1px;
+  transform: translateX(-50%);
+  transition: left 0.6s ease;
+}
+
+/* ===== Color — Delta-E gauge ===== */
+.delta-gauge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.delta-gauge__label {
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.delta-gauge__verdict {
+  font-size: 0.62rem;
+  font-weight: 700;
+}
+
+/* ===== Color — patch scores ===== */
+.patch-scores {
+  display: flex;
+  gap: 12px;
+}
+
+.patch-score {
+  flex: 1;
+  padding: 10px 14px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: var(--radius-md);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.patch-score__label {
+  font-size: 0.62rem;
+  font-weight: 600;
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.patch-score__values {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.patch-score__val--ref { color: #38bdf8; }
+.patch-score__sep { color: var(--text-tertiary); font-size: 0.65rem; }
+
+/* ===== Color — patch list ===== */
+.patch-list {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.patch-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 10px;
+  background: rgba(255,255,255,0.025);
+  border-radius: var(--radius-sm);
+  font-size: 0.72rem;
+}
+
+.patch-item__name { color: var(--text-secondary); }
+.patch-item__de   { font-family: var(--font-mono); font-weight: 600; }
+
+/* ===== Info row / pills ===== */
+.info-row {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.info-pill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: var(--radius-full);
+  font-size: 0.68rem;
+}
+
+.info-pill__key {
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-size: 0.6rem;
+  font-weight: 700;
+}
+
+.info-pill__val {
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+/* ===== Similarity ===== */
+.sim-hero {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.sim-hero__label {
+  font-size: 0.62rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-tertiary);
+}
+
+.sim-hero__value {
+  font-size: clamp(2.4rem, 6vw, 3.6rem);
+  font-weight: 900;
+  font-family: var(--font-mono);
+  letter-spacing: -0.04em;
+  line-height: 1;
+}
+
+.sim-hero__sublabel {
+  font-size: 0.62rem;
+  color: var(--text-tertiary);
+  font-family: var(--font-mono);
+}
+
+.sim-rings {
+  display: flex;
+  justify-content: center;
+  gap: 28px;
+  flex-wrap: wrap;
+}
+
+.sim-ring {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.sim-ring__label {
+  font-size: 0.62rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-align: center;
+}
+
+.sim-ring__quality {
+  font-size: 0.6rem;
+  font-weight: 700;
+}
+
+.sim-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.sim-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 10px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: var(--radius-md);
+  text-align: center;
+}
+
+.sim-stat__key {
+  font-size: 0.58rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--text-tertiary);
+}
+
+.sim-stat__val {
+  font-size: 0.85rem;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  color: var(--text-primary);
+}
+
+.sim-stat__hint {
+  font-size: 0.55rem;
+  color: var(--text-tertiary);
+}
+
+/* ===== Empty state ===== */
+.metric-view--empty {
+  justify-content: center;
+  min-height: 200px;
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  text-align: center;
+  padding: var(--space-2xl);
+}
+
+.empty-state__icon {
+  font-size: 2rem;
+  opacity: 0.3;
+}
+
+.empty-state__title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+}
+
+.empty-state__desc {
+  font-size: 0.78rem;
+  color: var(--text-tertiary);
+  max-width: 360px;
+  line-height: 1.6;
+}
+
+/* ===== Histogram ===== */
+.histogram-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.histogram-card {
+  padding: 14px;
+  background: rgba(255, 255, 255, 0.025);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: var(--radius-lg);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  transition: border-color 0.2s ease;
+}
+
+.histogram-card:hover {
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+.histogram-card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.histogram-card__label {
+  font-size: 0.7rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.histogram-card__stats {
+  display: flex;
+  gap: 10px;
+}
+
+.histogram-card__stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+}
+
+.histogram-card__stat-key {
+  font-size: 0.52rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-tertiary);
+}
+
+.histogram-card__stat-val {
+  font-size: 0.72rem;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  color: var(--text-secondary);
+}
+
+.histogram-card__zones {
+  display: flex;
+  justify-content: space-between;
+}
+
+.histogram-card__zone {
+  font-size: 0.55rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-tertiary);
+  opacity: 0.6;
+}
+
+/* Overlay chart */
+.histogram-overlay {
+  padding: 14px;
+  background: rgba(255, 255, 255, 0.025);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: var(--radius-lg);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.histogram-overlay__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.histogram-overlay__title {
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--text-tertiary);
+}
+
+.histogram-overlay__legend {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.62rem;
+  color: var(--text-tertiary);
+  font-weight: 600;
+}
+
+.histogram-overlay__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 640px) {
+  .metric-view__channel-grid { grid-template-columns: repeat(3, 1fr); }
+  .sim-stats { grid-template-columns: 1fr; gap: 6px; }
+  .sim-rings { gap: 16px; }
+  .patch-scores { flex-direction: column; }
+  .hero-stat__value { font-size: 1.8rem; }
+  .histogram-grid { grid-template-columns: 1fr; }
+}

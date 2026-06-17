@@ -334,10 +334,38 @@
   animation: fadeIn 0.3s ease both;
 }
 
+.submit-section__error {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.78rem;
+  color: var(--danger);
+  font-weight: 500;
+  background: rgba(248, 113, 113, 0.08);
+  border: 1px solid rgba(248, 113, 113, 0.2);
+  border-radius: var(--radius-md);
+  padding: 6px 12px;
+  animation: fadeIn 0.3s ease both;
+}
+
+/* ===== Analysis Section ===== */
+.analysis-section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.analysis-section__label {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+}
+
 .clear-images-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  align-self: center;
   gap: 5px;
   min-height: 28px;
   padding: 0 11px;

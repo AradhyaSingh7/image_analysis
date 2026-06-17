@@ -1,0 +1,122 @@
+/* ===== Metric Tabs Container ===== */
+.metric-tabs {
+  position: relative;
+  width: 100%;
+}
+
+/* Horizontal scroll without showing scrollbar */
+.metric-tabs__scroll {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 4px 2px 8px;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.metric-tabs__scroll::-webkit-scrollbar {
+  display: none;
+}
+
+/* ===== Individual Tab ===== */
+.metric-tab {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 34px;
+  padding: 0 16px;
+  border-radius: var(--radius-full);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--text-secondary);
+  font-family: var(--font-sans);
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
+  white-space: nowrap;
+  user-select: none;
+  letter-spacing: -0.01em;
+}
+
+.metric-tab:hover:not(.metric-tab--disabled) {
+  border-color: color-mix(in srgb, var(--tab-color) 40%, transparent);
+  background: color-mix(in srgb, var(--tab-color) 10%, transparent);
+  color: var(--text-primary);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px color-mix(in srgb, var(--tab-color) 20%, transparent);
+}
+
+/* ===== Active State ===== */
+.metric-tab--active {
+  border-color: color-mix(in srgb, var(--tab-color) 55%, transparent);
+  background: color-mix(in srgb, var(--tab-color) 15%, transparent);
+  color: var(--text-primary);
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--tab-color) 25%, transparent),
+    0 4px 20px color-mix(in srgb, var(--tab-color) 20%, transparent),
+    inset 0 1px 0 color-mix(in srgb, var(--tab-color) 15%, transparent);
+}
+
+.metric-tab--active .metric-tab__icon {
+  color: var(--tab-color);
+  filter: drop-shadow(0 0 6px var(--tab-color));
+}
+
+/* Active indicator dot */
+.metric-tab__dot {
+  position: absolute;
+  bottom: -1px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: var(--tab-color);
+  box-shadow: 0 0 6px var(--tab-color);
+}
+
+/* ===== Disabled State ===== */
+.metric-tab--disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.metric-tab--disabled:hover {
+  transform: none;
+  border-color: rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--text-secondary);
+  box-shadow: none;
+}
+
+/* ===== Icon ===== */
+.metric-tab__icon {
+  font-size: 0.85rem;
+  color: var(--text-tertiary);
+  line-height: 1;
+  transition: all 200ms ease;
+}
+
+.metric-tab__label {
+  line-height: 1;
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 768px) {
+  .metric-tabs__scroll {
+    justify-content: flex-start;
+    flex-wrap: nowrap;
+    padding-bottom: 10px;
+  }
+
+  .metric-tab {
+    font-size: 0.72rem;
+    min-height: 30px;
+    padding: 0 12px;
+  }
+}

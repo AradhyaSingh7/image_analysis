@@ -1,0 +1,129 @@
+/* ===== Compare Bar ===== */
+.compare-bar {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.compare-bar__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.compare-bar__label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+/* ===== Delta Badge ===== */
+.compare-bar__delta {
+  font-size: 0.68rem;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  letter-spacing: -0.01em;
+}
+
+.compare-bar__delta--good {
+  color: #34d399;
+  background: rgba(52, 211, 153, 0.12);
+  border: 1px solid rgba(52, 211, 153, 0.25);
+}
+
+.compare-bar__delta--bad {
+  color: #f87171;
+  background: rgba(248, 113, 113, 0.12);
+  border: 1px solid rgba(248, 113, 113, 0.25);
+}
+
+.compare-bar__delta--neutral {
+  color: var(--text-tertiary);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* ===== Tracks ===== */
+.compare-bar__tracks {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.compare-bar__row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* REF / TEST labels */
+.compare-bar__tag {
+  font-size: 0.56rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  font-family: var(--font-mono);
+  width: 32px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.compare-bar__tag--ref {
+  color: #38bdf8;
+}
+
+.compare-bar__tag--test {
+  color: #a78bfa;
+}
+
+/* Track background */
+.compare-bar__track {
+  flex: 1;
+  height: 7px;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+
+/* Fill bar */
+.compare-bar__fill {
+  height: 100%;
+  border-radius: var(--radius-full);
+  transition: width 800ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.compare-bar__fill--ref {
+  background: linear-gradient(90deg, #0284c7, #38bdf8);
+  box-shadow: 0 0 8px rgba(56, 189, 248, 0.3);
+}
+
+.compare-bar__fill--test {
+  background: linear-gradient(90deg, #7c3aed, #a78bfa);
+  box-shadow: 0 0 8px rgba(167, 139, 250, 0.3);
+}
+
+/* Win state — test beats ref */
+.compare-bar__fill--win {
+  background: linear-gradient(90deg, #059669, #34d399);
+  box-shadow: 0 0 10px rgba(52, 211, 153, 0.35);
+}
+
+/* Lose state — test worse than ref */
+.compare-bar__fill--lose {
+  background: linear-gradient(90deg, #dc2626, #f87171);
+  box-shadow: 0 0 10px rgba(248, 113, 113, 0.35);
+}
+
+/* Value text */
+.compare-bar__value {
+  font-size: 0.72rem;
+  font-weight: 600;
+  font-family: var(--font-mono);
+  color: var(--text-primary);
+  min-width: 52px;
+  text-align: right;
+  flex-shrink: 0;
+}

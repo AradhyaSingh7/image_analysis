@@ -96,6 +96,22 @@
   outline-offset: 3px;
 }
 
+/* ===== Loading spinner ===== */
+.submit-btn__spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin-slow 0.7s linear infinite;
+  flex-shrink: 0;
+}
+
+.submit-btn--loading {
+  cursor: wait;
+  opacity: 0.85;
+}
+
 @media (max-width: 640px) {
   .submit-btn {
     width: 100%;
