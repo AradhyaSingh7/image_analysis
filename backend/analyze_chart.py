@@ -378,11 +378,7 @@ def analyze_chart_photo(image_path):
         "histogram":     generate_histogram(rectified),   
     }
 def compute_similarity_from_arrays(img_a, img_b):
-    """
-    Same logic as your compute_similarity() but takes
-    already-loaded image arrays instead of file paths.
-    Needed because rectified images live in memory, not on disk.
-    """
+    
     if img_a.shape != img_b.shape:
         img_b = cv2.resize(img_b, (img_a.shape[1], img_a.shape[0]))
 
