@@ -382,29 +382,33 @@ def compute_similarity_from_arrays(img_a, img_b):
     if img_a.shape != img_b.shape:
         img_b = cv2.resize(img_b, (img_a.shape[1], img_a.shape[0]))
 
-    gray_a = cv2.cvtColor(img_a, cv2.COLOR_BGR2GRAY)
-    gray_b = cv2.cvtColor(img_b, cv2.COLOR_BGR2GRAY)
-
-    mse  = float(np.mean((img_a.astype(np.float32) - img_b.astype(np.float32)) ** 2))
-    psnr = float(cv2.PSNR(img_a, img_b))
-
-    score, _ = ssim_func(gray_a, gray_b, full=True, data_range=255)
-
     hist_corr = []
     for i in range(3):
         h1 = cv2.calcHist([img_a], [i], None, [256], [0, 256])
         h2 = cv2.calcHist([img_b], [i], None, [256], [0, 256])
-        cv2.normalize(h1, h1); cv2.normalize(h2, h2)
+        cv2.normalize(h1, h1)
+        cv2.normalize(h2, h2)
         hist_corr.append(cv2.compareHist(h1, h2, cv2.HISTCMP_CORREL))
+    hist_correlation = float(np.mean(hist_corr))
+
+    mean_abs_diff = float(np.mean(np.abs(
+        img_a.astype(np.float32) - img_b.astype(np.float32)
+    )))
+
+    mse  = float(np.mean((img_a.astype(np.float32) - img_b.astype(np.float32)) ** 2))
+    psnr = float(cv2.PSNR(img_a, img_b))
+
+   
+    hist_score = hist_correlation                          # already 0-1
+    diff_score = max(0.0, 1.0 - mean_abs_diff / 255.0)   # 0 diff = 1.0, 255 diff = 0.0
+    overall_similarity = (hist_score * 0.7) + (diff_score * 0.3)
 
     return {
-        "mse":              round(mse, 3),
-        "psnr_db":          round(psnr, 2),
-        "ssim":             round(float(score), 4),
-        "hist_correlation": round(float(np.mean(hist_corr)), 4),
-        "mean_abs_diff":    round(float(np.mean(np.abs(
-                                img_a.astype(np.float32) -
-                                img_b.astype(np.float32)))), 3),
+        "overall_similarity_pct": round(overall_similarity * 100, 2),
+        "hist_correlation":       round(hist_correlation, 4),
+        "mean_abs_diff":          round(mean_abs_diff, 3),
+        "mse":                    round(mse, 3),
+        "psnr_db":                round(psnr, 2),
     }
 
 def compare_two_cameras(image_path_A, image_path_B):

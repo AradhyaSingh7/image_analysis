@@ -43,8 +43,14 @@ function SimilarityRing({ value, label, max = 1, unit = '', color, decimals = 4 
 }
 
 export default function SimilarityView({ data }) {
-  const ssimPct = (data.ssim * 100).toFixed(2);
-  const histPct = (data.hist_correlation * 100).toFixed(2);
+  // overall_similarity_pct is already 0–100
+  const overallPct = typeof data.overall_similarity_pct === 'number'
+    ? data.overall_similarity_pct.toFixed(2)
+    : 'N/A';
+
+  // Normalise MSE into a 0-1 similarity (lower MSE = higher similarity)
+  // We cap MSE at 10000 (≈ max realistic value) for the ring display
+  const mseSimilarity = Math.max(0, 1 - data.mse / 10000);
 
   return (
     <div className="metric-view">
@@ -56,26 +62,28 @@ export default function SimilarityView({ data }) {
           WebkitTextFillColor: 'transparent',
           backgroundClip: 'text',
         }}>
-          {ssimPct}%
+          {overallPct}%
         </span>
-        <span className="sim-hero__sublabel">SSIM Score</span>
+        <span className="sim-hero__sublabel">
+          Hist. Corr. × 70% + Pixel Diff. × 30%
+        </span>
       </div>
 
       <div className="sim-rings">
         <SimilarityRing
-          value={data.ssim}
-          label="SSIM"
+          value={data.hist_correlation}
+          label="Histogram Corr."
           max={1}
-          unit="index"
+          unit="corr"
           color="#38bdf8"
           decimals={4}
         />
         <SimilarityRing
-          value={data.hist_correlation}
-          label="Histogram Corr."
+          value={mseSimilarity}
+          label="MSE Similarity"
           max={1}
+          unit="norm"
           color="#a78bfa"
-          unit="corr"
           decimals={4}
         />
         <SimilarityRing
@@ -90,24 +98,29 @@ export default function SimilarityView({ data }) {
 
       <div className="sim-stats">
         <div className="sim-stat">
+          <span className="sim-stat__key">Hist. Correlation</span>
+          <span className="sim-stat__val">{data.hist_correlation.toFixed(4)}</span>
+          <span className="sim-stat__hint">70% weight in score</span>
+        </div>
+        <div className="sim-stat">
           <span className="sim-stat__key">MSE</span>
           <span className="sim-stat__val">{data.mse.toFixed(3)}</span>
           <span className="sim-stat__hint">lower = more similar</span>
+        </div>
+        <div className="sim-stat">
+          <span className="sim-stat__key">Mean |Diff|</span>
+          <span className="sim-stat__val">{data.mean_abs_diff.toFixed(3)}</span>
+          <span className="sim-stat__hint">30% weight in score</span>
         </div>
         <div className="sim-stat">
           <span className="sim-stat__key">PSNR</span>
           <span className="sim-stat__val">{data.psnr_db.toFixed(2)} dB</span>
           <span className="sim-stat__hint">higher = better fidelity</span>
         </div>
-        <div className="sim-stat">
-          <span className="sim-stat__key">Mean |Diff|</span>
-          <span className="sim-stat__val">{data.mean_abs_diff.toFixed(3)}</span>
-          <span className="sim-stat__hint">per-pixel difference</span>
-        </div>
       </div>
 
       <p className="metric-view__hint">
-        SSIM &gt; 0.95 = near-identical · PSNR &gt; 40 dB = high fidelity · MSE close to 0 = minimal pixel error
+        Score = Hist. Corr. × 0.70 + (1 − Mean|Diff| / 255) × 0.30 · PSNR &gt; 40 dB = high fidelity · MSE close to 0 = minimal pixel error
       </p>
     </div>
   );
