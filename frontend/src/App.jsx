@@ -228,9 +228,6 @@ function App() {
           {!bothSelected && !isAnalyzing && (
             <p className="submit-section__hint">Upload both images to enable analysis</p>
           )}
-          {bothSelected && !isAnalyzing && !analysisData && (
-            <p className="submit-section__ready">Both images loaded — ready for analysis</p>
-          )}
           {analyzeError && (
             <p className="submit-section__error">
               <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">

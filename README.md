@@ -33,10 +33,13 @@ image_analysis/
 ├── frontend/          # React + Vite UI
 │   ├── src/
 │   │   ├── components/
-│   │   │   ├── Header.jsx          # Top navigation bar
 │   │   │   ├── ImageUploader.jsx   # Drag-and-drop upload zone + EXIF overlay
-│   │   │   ├── ImageComparison.jsx # Interactive before/after slider
-│   │   │   └── SubmitButton.jsx    # Animated analysis trigger button
+│   │   │   ├── AnalysisPanel.jsx   # Per-metric results panel
+│   │   │   ├── MetricTabs.jsx      # Metric tab switcher
+│   │   │   ├── SubmitButton.jsx    # Animated analysis trigger button
+│   │   │   └── metric-views/       # Individual metric visualisations
+│   │   ├── config/
+│   │   │   └── metricsConfig.js    # Metric definitions & labels
 │   │   ├── utils/
 │   │   │   └── extractMetadata.js  # Client-side EXIF extraction (exifr)
 │   │   ├── App.jsx                 # Root component & state orchestration
@@ -46,8 +49,10 @@ image_analysis/
 │   ├── vite.config.js
 │   └── package.json
 │
-└── backend/           # Python analysis engine (in progress)
-    ├── metadata.py    # EXIF extraction with Pillow + exifread
+└── backend/           # Python analysis engine (Flask REST API)
+    ├── app.py          # Flask API server — POST /analyze, GET /health
+    ├── analyze_chart.py # All CV metrics (sharpness, noise, SSIM, etc.)
+    ├── metadata.py     # EXIF extraction with Pillow + exifread
     └── requirements.txt
 ```
 
@@ -55,7 +60,7 @@ image_analysis/
 
 ## Frontend
 
-The frontend is a **React 19 + Vite** single-page application styled with plain CSS (no Tailwind). It is fully functional as a UI shell; backend integration is pending.
+The frontend is a **React 19 + Vite** single-page application styled with plain CSS (no Tailwind). It is fully integrated with the Flask backend.
 
 ### Features (implemented)
 
@@ -74,6 +79,7 @@ The frontend is a **React 19 + Vite** single-page application styled with plain 
 | `react` | ^19 | UI framework |
 | `react-dom` | ^19 | DOM rendering |
 | `exifr` | ^7.1.3 | Client-side EXIF/IPTC/XMP parsing |
+| `recharts` | ^3 | Metric chart & histogram visualisations |
 | `vite` | ^8 | Build tool & dev server |
 | `@vitejs/plugin-react` | ^6 | Vite React transform |
 
@@ -110,7 +116,7 @@ The project uses ESLint with `eslint-plugin-react-hooks` and `eslint-plugin-reac
 
 ## Backend
 
-The backend is a **Python** service. It will expose a REST API (FastAPI) that accepts two image files, runs computer-vision analysis, and returns a structured JSON report.
+The backend is a **Python + Flask** REST API that accepts two image files, runs computer-vision analysis, and returns a structured JSON report. It listens on **port 5000** by default.
 
 ### Metrics
 
@@ -155,25 +161,33 @@ See [`backend/requirements.txt`](backend/requirements.txt) for the full list. Ke
 | `scikit-image` | SSIM, structural similarity metrics |
 | `numpy` | Numerical array operations |
 | `exifread` | Raw EXIF tag reading |
-| `fastapi` | REST API framework |
-| `uvicorn` | ASGI server |
-| `python-multipart` | File upload support for FastAPI |
+| `flask` | REST API framework |
+| `flask-cors` | Cross-origin request support (Vite dev server) |
+| `python-dotenv` | Environment variable loading |
+| `piexif` | EXIF read/write support |
 
-### Running the API (once implemented)
+### Running the API
 
 ```bash
-uvicorn main:app --reload --port 8000
+# From the backend/ directory (with .venv activated)
+python app.py
 ```
 
-The frontend will send a `POST /analyze` request with two image files and receive a JSON response containing all metric scores and metadata.
+The server starts on **http://localhost:5000**. The frontend sends a `POST /analyze` request with two image files and receives a JSON response containing all metric scores and metadata.
+
+To verify the server is running:
+```bash
+curl http://localhost:5000/health
+# expected: {"status": "ok"}
+```
 
 ---
 
 ## Roadmap 
 
-- [ ] Backend FastAPI server with `/analyze` endpoint
-- [ ] Full metric computation (sharpness, noise, SSIM, colour accuracy, dynamic range)
-- [ ] Results panel in the UI showing per-metric scores with visual indicators
+- [x] Backend Flask server with `/analyze` endpoint
+- [x] Full metric computation (sharpness, noise, SSIM, colour accuracy, dynamic range)
+- [x] Results panel in the UI showing per-metric scores with visual indicators
 - [ ] "View Full Metadata" modal (raw EXIF tag table)
 - [ ] PDF / JSON export of analysis report
 - [ ] Batch comparison mode (multiple test images against one reference)

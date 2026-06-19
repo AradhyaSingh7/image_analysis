@@ -86,12 +86,12 @@ export default function AnalysisPanel({ data, isAnalyzing, activeMetric, metrics
         <div className="analysis-panel__title-row">
           <span className="analysis-panel__icon">{activeConfig?.icon}</span>
           <h2 className="analysis-panel__title">{activeConfig?.label}</h2>
-          {data && !isAnalyzing && (
+          {/* {data && !isAnalyzing && (
             <span className="analysis-panel__badge">
               <span className="analysis-panel__badge-dot" />
               Live
             </span>
-          )}
+          )} */}
         </div>
 
         {/* Legend */}
