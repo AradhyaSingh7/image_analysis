@@ -1,3 +1,15 @@
+"""
+analyze_chart.py
+----------------
+Full pipeline:
+  1. Detect ArUco corner markers in a chart photo
+  2. Rectify (perspective-correct) the chart
+  3. Extract the 24 colour patches
+  4. Run sharpness / noise / dynamic-range / colour-accuracy metrics
+  5. Compare two camera results 
+
+"""
+
 import cv2
 import numpy as np
 from skimage.color import deltaE_ciede2000
@@ -64,12 +76,13 @@ def detect_and_rectify_chart(img, target_w=1200, target_h=900):
     if not all(k in id_to_centre for k in [0, 1, 2, 3]):
         return None, None, False
 
-    
+    # Source: where markers sit in the actual (possibly angled) photo
+    # ID assignment: 0=TL, 1=TR, 2=BR, 3=BL  (matches generate_chart.py)
     src_pts = np.array([
-        id_to_centre[0],  
-        id_to_centre[1],   
-        id_to_centre[2],   
-        id_to_centre[3],   
+        id_to_centre[0],   # top-left
+        id_to_centre[1],   # top-right
+        id_to_centre[2],   # bottom-right
+        id_to_centre[3],   # bottom-left
     ], dtype=np.float32)
 
     # Destination: perfect rectangle corners of the output canvas
