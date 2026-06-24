@@ -29,7 +29,8 @@ COLORCHECKER_LAB = [
     (96.54, -0.43,   1.19), (81.26, -0.64,  -0.34), (66.77, -0.73,  -0.50),
     (50.87, -0.15,  -0.27), (35.66, -0.42,  -1.23), (20.46, -0.08,  -0.97),
 ]
-
+NEUTRAL_PATCH_INDICES = [18, 19, 20, 21, 22, 23]
+NEUTRAL_L_VALUES      = [96.54, 81.26, 66.77, 50.87, 35.66, 20.46]
 PATCH_NAMES = [
     "Dark Skin","Light Skin","Blue Sky","Foliage","Blue Flower","Bluish Green",
     "Orange","Purplish Blue","Moderate Red","Purple","Yellow Green","Orange Yellow",
@@ -344,7 +345,376 @@ def generate_histogram(img):
     hist = cv2.calcHist([gray], [0], None, [256], [0, 256])
 
     return hist.flatten().tolist()
+def analyze_lca(img, num_sample_edges=100):
+    """
+    Lateral Chromatic Aberration (LCA)
 
+    Measures sub-pixel displacement between:
+        R vs G
+        B vs G
+
+    using edge positions detected on the green channel.
+
+    Positive shift:
+        channel edge lies right of green edge
+
+    Negative shift:
+        channel edge lies left of green edge
+    """
+
+    H, W = img.shape[:2]
+
+    b_ch = img[:, :, 0].astype(np.float32)
+    g_ch = img[:, :, 1].astype(np.float32)
+    r_ch = img[:, :, 2].astype(np.float32)
+
+    # --------------------------------------------------
+    # Detect strong edges from green channel
+    # --------------------------------------------------
+
+    g_uint8 = cv2.normalize(
+        g_ch, None, 0, 255, cv2.NORM_MINMAX
+    ).astype(np.uint8)
+
+    edges = cv2.Canny(g_uint8, 80, 180)
+
+    edge_coords = np.column_stack(np.where(edges > 0))
+
+    if len(edge_coords) < 20:
+        return {
+            "mean_r_shift_px": 0.0,
+            "mean_b_shift_px": 0.0,
+            "center_r_shift_px": 0.0,
+            "center_b_shift_px": 0.0,
+            "outer_r_shift_px": 0.0,
+            "outer_b_shift_px": 0.0,
+            "lca_severity": "unknown"
+        }
+
+    # --------------------------------------------------
+    # Random sampling
+    # --------------------------------------------------
+
+    rng = np.random.default_rng(42)
+
+    sample_idx = rng.choice(
+        len(edge_coords),
+        size=min(num_sample_edges, len(edge_coords)),
+        replace=False
+    )
+
+    cy, cx = H / 2, W / 2
+    max_dist = np.sqrt(cx**2 + cy**2)
+
+    r_shifts = []
+    b_shifts = []
+
+    r_center = []
+    b_center = []
+
+    r_outer = []
+    b_outer = []
+
+    half_win = 10
+
+    # --------------------------------------------------
+    # Subpixel edge localization
+    # --------------------------------------------------
+
+    def subpixel_edge_position(profile):
+
+        grad = np.abs(np.gradient(profile))
+
+        peak = np.argmax(grad)
+
+        if peak <= 0 or peak >= len(grad) - 1:
+            return float(peak)
+
+        y1 = grad[peak - 1]
+        y2 = grad[peak]
+        y3 = grad[peak + 1]
+
+        denom = (y1 - 2 * y2 + y3)
+
+        if abs(denom) < 1e-8:
+            return float(peak)
+
+        offset = 0.5 * (y1 - y3) / denom
+
+        return float(peak + offset)
+
+    # --------------------------------------------------
+    # Measure channel edge offsets
+    # --------------------------------------------------
+
+    for idx in sample_idx:
+
+        row, col = edge_coords[idx]
+
+        c1 = max(0, col - half_win)
+        c2 = min(W, col + half_win + 1)
+
+        if (c2 - c1) < 7:
+            continue
+
+        prof_r = r_ch[row, c1:c2]
+        prof_g = g_ch[row, c1:c2]
+        prof_b = b_ch[row, c1:c2]
+
+        r_pos = subpixel_edge_position(prof_r)
+        g_pos = subpixel_edge_position(prof_g)
+        b_pos = subpixel_edge_position(prof_b)
+
+        r_shift = r_pos - g_pos
+        b_shift = b_pos - g_pos
+
+        if abs(r_shift) > 5 or abs(b_shift) > 5:
+            continue
+
+        r_shifts.append(r_shift)
+        b_shifts.append(b_shift)
+
+        dist = np.sqrt(
+            (col - cx) ** 2 +
+            (row - cy) ** 2
+        ) / max_dist
+
+        if dist < 0.5:
+            r_center.append(r_shift)
+            b_center.append(b_shift)
+        else:
+            r_outer.append(r_shift)
+            b_outer.append(b_shift)
+
+    # --------------------------------------------------
+    # Helper
+    # --------------------------------------------------
+
+    def safe_mean(lst):
+        return float(np.mean(lst)) if len(lst) else 0.0
+
+    mean_r = safe_mean(r_shifts)
+    mean_b = safe_mean(b_shifts)
+
+    center_r = safe_mean(r_center)
+    center_b = safe_mean(b_center)
+
+    outer_r = safe_mean(r_outer)
+    outer_b = safe_mean(b_outer)
+
+    worst_shift = max(
+        abs(outer_r),
+        abs(outer_b)
+    )
+
+    # --------------------------------------------------
+    # Severity
+    # --------------------------------------------------
+
+    if worst_shift < 0.2:
+        severity = "none"
+    elif worst_shift < 0.5:
+        severity = "low"
+    elif worst_shift < 1.0:
+        severity = "moderate"
+    else:
+        severity = "high"
+
+    return {
+        "mean_r_shift_px": round(mean_r, 3),
+        "mean_b_shift_px": round(mean_b, 3),
+
+        "center_r_shift_px": round(center_r, 3),
+        "center_b_shift_px": round(center_b, 3),
+
+        "outer_r_shift_px": round(outer_r, 3),
+        "outer_b_shift_px": round(outer_b, 3),
+
+        "lca_severity": severity
+    }
+ 
+ 
+def analyze_tonal_response(patches_lab, patches_bgr):
+    """
+    Fits a gamma / tonal response curve using the 6 neutral gray patches.
+ 
+    How it works:
+      - The 6 neutral patches have known reference L* values
+        (96.5, 81.3, 66.8, 50.9, 35.7, 20.5) — white to black.
+      - L* is a perceptual scale, but it's close to a power-law
+        transformation of linear light. We convert our reference L*
+        values to "linear scene reflectance" and compare against the
+        measured pixel values.
+      - By fitting pixel_value = a * (linear_light ^ gamma) we get the
+        camera's effective encoding gamma.
+      - A camera that encodes with sRGB has gamma ≈ 0.45 (1/2.2).
+        The "display gamma" to decode it is ~2.2.
+ 
+    Returns:
+      neutral_patches       — measured vs reference for each gray patch
+      estimated_gamma       — best-fit exponent
+      r_squared             — goodness of fit (1.0 = perfect)
+      tonal_verdict         — interpretation string
+    """
+    neutral_data = []
+ 
+    for patch_idx, ref_L in zip(NEUTRAL_PATCH_INDICES, NEUTRAL_L_VALUES):
+        measured_lab = patches_lab[patch_idx]
+        measured_bgr = patches_bgr[patch_idx]
+        measured_L   = measured_lab[0]
+ 
+        # Convert reference L* → approximate linear reflectance
+        # (inverse of the CIE L* formula)
+        L_norm = ref_L / 100.0
+        if L_norm > 0.08856:
+            linear_ref = ((L_norm + 0.16) / 1.16) ** 3
+        else:
+            linear_ref = L_norm / 9.033
+ 
+        # Mean pixel value (0-255) → normalised (0-1)
+        pixel_val = np.mean(measured_bgr) / 255.0
+ 
+        neutral_data.append({
+            "patch_name":    PATCH_NAMES[patch_idx],
+            "reference_L":   ref_L,
+            "measured_L":    round(measured_L, 2),
+            "linear_ref":    round(linear_ref, 4),
+            "pixel_val_norm": round(pixel_val, 4),
+        })
+ 
+    # Fit gamma via least-squares in log space:
+    #   log(pixel) = gamma * log(linear) + log(a)
+    linear_refs = np.array([d["linear_ref"] for d in neutral_data])
+    pixel_vals  = np.array([d["pixel_val_norm"] for d in neutral_data])
+ 
+    # Guard against zeros before log
+    valid = (linear_refs > 1e-4) & (pixel_vals > 1e-4)
+    if valid.sum() >= 2:
+        log_x = np.log(linear_refs[valid])
+        log_y = np.log(pixel_vals[valid])
+ 
+        # np.polyfit does a linear fit to log_y = gamma * log_x + b
+        coeffs = np.polyfit(log_x, log_y, 1)
+        estimated_gamma = float(coeffs[0])
+ 
+        # R² — how well does a pure power law fit?
+        y_pred = np.polyval(coeffs, log_x)
+        ss_res = np.sum((log_y - y_pred) ** 2)
+        ss_tot = np.sum((log_y - log_y.mean()) ** 2)
+        r_squared = float(1.0 - ss_res / ss_tot) if ss_tot > 0 else 0.0
+    else:
+        estimated_gamma = float("nan")
+        r_squared = 0.0
+ 
+    # Interpret: typical camera-to-screen pipeline has encode gamma ~0.45
+    if np.isnan(estimated_gamma):
+        verdict = "insufficient data"
+    elif 0.40 <= estimated_gamma <= 0.55:
+        verdict = "normal sRGB-like encoding"
+    elif estimated_gamma < 0.40:
+        verdict = "lower than typical (darker midtones)"
+    else:
+        verdict = "higher than typical (brighter midtones)"
+ 
+    return {
+        "neutral_patches":  neutral_data,
+        "estimated_gamma":  round(estimated_gamma, 4) if not np.isnan(estimated_gamma) else None,
+        "r_squared":        round(r_squared, 4),
+        "tonal_verdict":    verdict,
+    }
+ 
+ 
+def analyze_white_balance(patches_bgr):
+    """
+    Estimates the camera's white balance error and approximate color temperature.
+ 
+    How it works:
+      - The 6 neutral gray patches should have equal R, G, B values if
+        the camera's white balance is perfect (they're literally gray).
+      - Any deviation in the R:G or B:G ratio tells us the camera ran
+        warm (too red) or cool (too blue).
+      - We compute the mean R/G and B/G ratios across all neutral patches,
+        then compare to the ideal 1:1:1.
+      - We estimate Correlated Color Temperature (CCT) from the R/B ratio
+        using a simple empirical curve (this is a rough proxy, not
+        a precise spectrometer reading).
+ 
+    Returns:
+      per_patch           — R/G, B/G ratios for each neutral patch
+      mean_rg_ratio       — average R/G (>1 = warm/reddish)
+      mean_bg_ratio       — average B/G (>1 = cool/bluish)
+      rg_error_pct        — % deviation of R from G
+      bg_error_pct        — % deviation of B from G
+      estimated_cct_K     — rough color temperature in Kelvin
+      wb_verdict          — "neutral" / "warm" / "cool" / "mixed"
+    """
+    neutral_data = []
+    rg_ratios, bg_ratios = [], []
+ 
+    for patch_idx in NEUTRAL_PATCH_INDICES:
+        b_val, g_val, r_val = patches_bgr[patch_idx]
+ 
+        # Avoid division by zero on near-black or saturated patches
+        if g_val < 10:
+            continue
+ 
+        rg = r_val / g_val
+        bg = b_val / g_val
+ 
+        neutral_data.append({
+            "patch_name": PATCH_NAMES[patch_idx],
+            "r_val": round(r_val, 2),
+            "g_val": round(g_val, 2),
+            "b_val": round(b_val, 2),
+            "rg_ratio": round(rg, 4),
+            "bg_ratio": round(bg, 4),
+        })
+        rg_ratios.append(rg)
+        bg_ratios.append(bg)
+ 
+    if not rg_ratios:
+        return {"wb_verdict": "insufficient data"}
+ 
+    mean_rg = float(np.mean(rg_ratios))
+    mean_bg = float(np.mean(bg_ratios))
+ 
+    rg_error_pct = (mean_rg - 1.0) * 100
+    bg_error_pct = (mean_bg - 1.0) * 100
+ 
+    # Rough CCT estimate from R/B ratio using an empirical regression.
+    # This approximates the daylight locus (Judd 1960 / McCamy 1992 simplified).
+    # The formula is: CCT ≈ A / (R/B)^B + offset
+    # More red than blue → warmer (lower K); more blue → cooler (higher K)
+    rb_ratio = mean_rg / mean_bg if mean_bg > 0 else 1.0
+    # Empirical fit valid roughly 2500K–10000K:
+    # CCT(K) ≈ 3500 * (1/rb_ratio)^1.2 * 3500 ... simplified version:
+    # We use: CCT = n / rb + offset where n and offset come from daylight data
+    # A common practical approximation (Kelly 1963 / simpler form):
+    estimated_cct = max(1500.0, min(15000.0, 5000.0 / (rb_ratio ** 0.8)))
+ 
+    # Verdict
+    if abs(rg_error_pct) < 5 and abs(bg_error_pct) < 5:
+        verdict = "neutral"
+    elif rg_error_pct > 5 and bg_error_pct < -5:
+        verdict = "warm (excess red, deficit blue)"
+    elif rg_error_pct < -5 and bg_error_pct > 5:
+        verdict = "cool (deficit red, excess blue)"
+    elif rg_error_pct > 5:
+        verdict = "slightly warm (excess red)"
+    elif bg_error_pct > 5:
+        verdict = "slightly cool (excess blue)"
+    else:
+        verdict = "mixed"
+ 
+    return {
+        "per_patch":        neutral_data,
+        "mean_rg_ratio":    round(mean_rg, 4),
+        "mean_bg_ratio":    round(mean_bg, 4),
+        "rg_error_pct":     round(rg_error_pct, 2),
+        "bg_error_pct":     round(bg_error_pct, 2),
+        "estimated_cct_K":  round(estimated_cct, 0),
+        "wb_verdict":       verdict,
+    }
 # ─────────────────────────────────────────────────────────────────
 # STEP 5 — MAIN PIPELINE
 # ─────────────────────────────────────────────────────────────────
@@ -369,7 +739,10 @@ def analyze_chart_photo(image_path):
         "color_accuracy":analyze_color_accuracy(patches_lab),
         "blur":          analyze_blur(rectified),       
         "exposure":      analyze_exposure(rectified),
-        "histogram":     generate_histogram(rectified),   
+        "histogram":     generate_histogram(rectified),
+        "lca":             analyze_lca(rectified),
+        "tonal_response":  analyze_tonal_response(patches_lab, patches_bgr),
+        "white_balance":   analyze_white_balance(patches_bgr),   
     }
 def compute_similarity_from_arrays(img_a, img_b):
     
@@ -418,27 +791,24 @@ def compare_two_cameras(image_path_A, image_path_B):
     patches_bgr_a, patches_lab_a = extract_patches(rect_a)
     patches_bgr_b, patches_lab_b = extract_patches(rect_b)
 
+    def full_metrics(rectified, patches_bgr, patches_lab):
+        return {
+            "sharpness":     analyze_sharpness(rectified),
+            "noise":         estimate_noise(rectified),
+            "dynamic_range": analyze_dynamic_range(rectified),
+            "color_accuracy":analyze_color_accuracy(patches_lab),
+            "blur":          analyze_blur(rectified),
+            "exposure":      analyze_exposure(rectified),
+            "histogram":     generate_histogram(rectified),
+            "lca":           analyze_lca(rectified),
+            "tonal_response":analyze_tonal_response(patches_lab, patches_bgr),
+            "white_balance": analyze_white_balance(patches_bgr),
+        }
+ 
     return {
-        "camera_A": {
-            "sharpness":     analyze_sharpness(rect_a),
-            "noise":         estimate_noise(rect_a),
-            "dynamic_range": analyze_dynamic_range(rect_a),
-            "color_accuracy":analyze_color_accuracy(patches_lab_a),
-            "blur":          analyze_blur(rect_a),
-            "exposure":      analyze_exposure(rect_a),
-            "histogram":     generate_histogram(rect_a),
-        },
-        "camera_B": {
-            "sharpness":     analyze_sharpness(rect_b),
-            "noise":         estimate_noise(rect_b),
-            "dynamic_range": analyze_dynamic_range(rect_b),
-            "color_accuracy":analyze_color_accuracy(patches_lab_b),
-            "blur":          analyze_blur(rect_b),
-            "exposure":      analyze_exposure(rect_b),
-            "histogram":     generate_histogram(rect_b),
-        },
-        # Similarity runs on the two rectified images against each other
-        "similarity":    compute_similarity_from_arrays(rect_a, rect_b),
+        "camera_A":  full_metrics(rect_a, patches_bgr_a, patches_lab_a),
+        "camera_B":  full_metrics(rect_b, patches_bgr_b, patches_lab_b),
+        "similarity":compute_similarity_from_arrays(rect_a, rect_b),
     }
 def print_comparison(comparison):
     for camera in ["camera_A", "camera_B"]:
@@ -531,6 +901,30 @@ if __name__ == "__main__":
         print(f"  under ΔE 2  : {ca['patches_under_2']}/24")
         print(f"  under ΔE 5  : {ca['patches_under_5']}/24")
 
+        print("\n── LCA (Chromatic Aberration) ─────────")
+        lca = result["lca"]
+        print(f"  mean R shift : {lca['mean_r_shift_px']} px")
+        print(f"  mean B shift : {lca['mean_b_shift_px']} px")
+        print(f"  outer R shift: {lca['outer_r_shift_px']} px")
+        print(f"  outer B shift: {lca['outer_b_shift_px']} px")
+        print(f"  severity     : {lca['lca_severity']}")
+    
+        print("\n── Tonal Response / Gamma ─────────────")
+        tr = result["tonal_response"]
+        print(f"  estimated gamma : {tr['estimated_gamma']}")
+        print(f"  R²              : {tr['r_squared']}")
+        print(f"  verdict         : {tr['tonal_verdict']}")
+        print("  neutral patches:")
+        for p in tr["neutral_patches"]:
+            print(f"    {p['patch_name']:<12}  ref L={p['reference_L']:5.1f}  "
+                f"measured L={p['measured_L']:5.1f}  pixel={p['pixel_val_norm']:.3f}")
+    
+        print("\n── White Balance ──────────────────────")
+        wb = result["white_balance"]
+        print(f"  R/G ratio      : {wb['mean_rg_ratio']}  (error: {wb['rg_error_pct']:+.1f}%)")
+        print(f"  B/G ratio      : {wb['mean_bg_ratio']}  (error: {wb['bg_error_pct']:+.1f}%)")
+        print(f"  estimated CCT  : {wb['estimated_cct_K']} K")
+        print(f"  verdict        : {wb['wb_verdict']}")
         print("\n── Per-patch (first 6) ────────────────")
         for p in ca["per_patch"][:6]:
             print(f"  [{p['patch_id']:2d}] {p['patch_name']:<20}  ΔE={p['delta_e_2000']}")
