@@ -1,7 +1,7 @@
-/* ===== CompareTable — minimal data table ===== */
+/* ===== CompareTable — professional data table ===== */
 .compare-table {
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: var(--radius-lg);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: var(--radius-md);
   overflow: hidden;
 }
 
@@ -10,21 +10,21 @@
   display: grid;
   grid-template-columns: 1.8fr 1fr 1fr 0.7fr;
   gap: 0;
-  padding: 8px 16px;
-  background: rgba(255, 255, 255, 0.03);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  padding: 7px 14px;
+  background: rgba(255, 255, 255, 0.025);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .compare-table__th {
-  font-size: 0.58rem;
-  font-weight: 700;
+  font-size: 0.56rem;
+  font-weight: 650;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.07em;
   color: var(--text-tertiary);
 }
 
-.compare-table__th--ref  { text-align: right; color: #38bdf8; opacity: 0.7; }
-.compare-table__th--test { text-align: right; color: #a78bfa; opacity: 0.7; }
+.compare-table__th--ref  { text-align: right; color: var(--color-ref); opacity: 0.65; }
+.compare-table__th--test { text-align: right; color: var(--color-test); opacity: 0.65; }
 .compare-table__th--delta { text-align: right; }
 
 /* Data rows */
@@ -32,9 +32,9 @@
   display: grid;
   grid-template-columns: 1.8fr 1fr 1fr 0.7fr;
   gap: 0;
-  padding: 9px 16px;
-  transition: background 150ms ease;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+  padding: 8px 14px;
+  transition: background var(--transition-fast);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.025);
 }
 
 .compare-table__row:last-child {
@@ -42,37 +42,37 @@
 }
 
 .compare-table__row:hover {
-  background: rgba(255, 255, 255, 0.025);
+  background: rgba(255, 255, 255, 0.02);
 }
 
 .compare-table__label {
-  font-size: 0.74rem;
-  font-weight: 600;
+  font-size: 0.72rem;
+  font-weight: 550;
   color: var(--text-secondary);
 }
 
 .compare-table__val {
-  font-size: 0.74rem;
+  font-size: 0.72rem;
   font-weight: 600;
   font-family: var(--font-mono);
   text-align: right;
   color: var(--text-primary);
 }
 
-.compare-table__val--ref  { color: #7dd3fc; }
-.compare-table__val--test { color: #c4b5fd; }
+.compare-table__val--ref  { color: var(--color-ref); }
+.compare-table__val--test { color: var(--color-test); }
 
 /* Delta badge */
 .compare-table__delta {
-  font-size: 0.64rem;
-  font-weight: 700;
+  font-size: 0.62rem;
+  font-weight: 650;
   font-family: var(--font-mono);
   text-align: right;
   padding: 1px 0;
   letter-spacing: -0.01em;
 }
 
-.delta--good    { color: #34d399; }
+.delta--good    { color: #4ade80; }
 .delta--bad     { color: #f87171; }
 .delta--neutral { color: var(--text-tertiary); }
 
@@ -81,9 +81,9 @@
   .compare-table__header,
   .compare-table__row {
     grid-template-columns: 1.4fr 1fr 1fr 0.8fr;
-    padding: 7px 12px;
+    padding: 6px 10px;
   }
 
-  .compare-table__label { font-size: 0.68rem; }
-  .compare-table__val   { font-size: 0.68rem; }
+  .compare-table__label { font-size: 0.66rem; }
+  .compare-table__val   { font-size: 0.66rem; }
 }

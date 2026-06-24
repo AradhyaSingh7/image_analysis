@@ -11,7 +11,7 @@ export default function DynamicRangeView({ refData, testData }) {
       <div className="metric-view__hero">
         <div className="hero-stat hero-stat--ref">
           <span className="hero-stat__label">Reference DR</span>
-          <span className="hero-stat__value" style={{ color: '#38bdf8' }}>
+          <span className="hero-stat__value" style={{ color: 'var(--color-ref)' }}>
             {refRangePct}
           </span>
           <span className="hero-stat__unit">% tonal range (p1–p99)</span>
@@ -25,7 +25,7 @@ export default function DynamicRangeView({ refData, testData }) {
 
         <div className="hero-stat hero-stat--test">
           <span className="hero-stat__label">Test DR</span>
-          <span className="hero-stat__value" style={{ color: '#a78bfa' }}>
+          <span className="hero-stat__value" style={{ color: 'var(--color-test)' }}>
             {testRangePct}
           </span>
           <span className="hero-stat__unit">% tonal range (p1–p99)</span>

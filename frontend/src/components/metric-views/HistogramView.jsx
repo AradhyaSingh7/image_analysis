@@ -54,19 +54,21 @@ function histStats(hist) {
   return { peak: peakIdx, mean: Math.round(sum / total), median };
 }
 
+const REF_COLOR = '#68b5e8';
+const TEST_COLOR = '#a98eda';
+
 const CustomTooltip = ({ active, payload, label }) => {
   if (!active || !payload?.length) return null;
   return (
     <div style={{
-      background: 'rgba(14, 16, 26, 0.95)',
-      border: '1px solid rgba(255,255,255,0.1)',
-      borderRadius: 8,
-      padding: '8px 12px',
-      fontSize: '0.7rem',
+      background: 'rgba(14, 16, 24, 0.94)',
+      border: '1px solid rgba(255,255,255,0.08)',
+      borderRadius: 6,
+      padding: '6px 10px',
+      fontSize: '0.68rem',
       fontFamily: 'var(--font-mono)',
-      backdropFilter: 'blur(8px)',
     }}>
-      <div style={{ color: 'var(--text-tertiary)', marginBottom: 4 }}>Lum {label}</div>
+      <div style={{ color: 'var(--text-tertiary)', marginBottom: 3 }}>Lum {label}</div>
       {payload.map((p) => (
         <div key={p.dataKey} style={{ color: p.color, display: 'flex', gap: 8 }}>
           <span>{p.dataKey === 'ref' ? 'Reference' : 'Test'}</span>
@@ -102,25 +104,25 @@ function SingleHistogram({ hist, color, label, accentColor }) {
         </div>
       </div>
 
-      <ResponsiveContainer width="100%" height={160}>
+      <ResponsiveContainer width="100%" height={150}>
         <AreaChart data={data} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
           <defs>
             <linearGradient id={`grad-${label.replace(/\s/g, '')}`} x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor={accentColor} stopOpacity={0.5} />
-              <stop offset="95%" stopColor={accentColor} stopOpacity={0.03} />
+              <stop offset="5%" stopColor={accentColor} stopOpacity={0.35} />
+              <stop offset="95%" stopColor={accentColor} stopOpacity={0.02} />
             </linearGradient>
           </defs>
-          <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false} />
+          <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.03)" vertical={false} />
           <XAxis
             dataKey="x"
             tick={{ fontSize: 9, fill: 'var(--text-tertiary)', fontFamily: 'var(--font-mono)' }}
             tickLine={false}
-            axisLine={{ stroke: 'rgba(255,255,255,0.08)' }}
+            axisLine={{ stroke: 'rgba(255,255,255,0.06)' }}
             ticks={[0, 64, 128, 192, 255]}
           />
           <YAxis hide domain={[0, maxV * 1.1]} />
           <Tooltip content={<CustomTooltip />} />
-          <ReferenceLine x={Math.round(stats.mean / 4)} stroke={accentColor} strokeWidth={1} strokeDasharray="3 3" strokeOpacity={0.5} />
+          <ReferenceLine x={Math.round(stats.mean / 4)} stroke={accentColor} strokeWidth={1} strokeDasharray="3 3" strokeOpacity={0.4} />
           <Area
             type="monotone"
             dataKey="v"
@@ -128,7 +130,7 @@ function SingleHistogram({ hist, color, label, accentColor }) {
             strokeWidth={1.5}
             fill={`url(#grad-${label.replace(/\s/g, '')})`}
             isAnimationActive={true}
-            animationDuration={600}
+            animationDuration={500}
           />
         </AreaChart>
       </ResponsiveContainer>
@@ -152,31 +154,31 @@ function OverlayHistogram({ refHist, testHist }) {
       <div className="histogram-overlay__header">
         <span className="histogram-overlay__title">Overlay Comparison</span>
         <div className="histogram-overlay__legend">
-          <span className="histogram-overlay__dot" style={{ background: '#38bdf8' }} />
+          <span className="histogram-overlay__dot" style={{ background: REF_COLOR }} />
           <span>Reference</span>
-          <span className="histogram-overlay__dot" style={{ background: '#a78bfa', marginLeft: 8 }} />
+          <span className="histogram-overlay__dot" style={{ background: TEST_COLOR, marginLeft: 8 }} />
           <span>Test</span>
         </div>
       </div>
 
-      <ResponsiveContainer width="100%" height={180}>
+      <ResponsiveContainer width="100%" height={170}>
         <AreaChart data={data} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
           <defs>
             <linearGradient id="grad-ref-overlay" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#38bdf8" stopOpacity={0.35} />
-              <stop offset="95%" stopColor="#38bdf8" stopOpacity={0.02} />
+              <stop offset="5%" stopColor={REF_COLOR} stopOpacity={0.25} />
+              <stop offset="95%" stopColor={REF_COLOR} stopOpacity={0.02} />
             </linearGradient>
             <linearGradient id="grad-test-overlay" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#a78bfa" stopOpacity={0.35} />
-              <stop offset="95%" stopColor="#a78bfa" stopOpacity={0.02} />
+              <stop offset="5%" stopColor={TEST_COLOR} stopOpacity={0.25} />
+              <stop offset="95%" stopColor={TEST_COLOR} stopOpacity={0.02} />
             </linearGradient>
           </defs>
-          <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false} />
+          <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.03)" vertical={false} />
           <XAxis
             dataKey="x"
             tick={{ fontSize: 9, fill: 'var(--text-tertiary)', fontFamily: 'var(--font-mono)' }}
             tickLine={false}
-            axisLine={{ stroke: 'rgba(255,255,255,0.08)' }}
+            axisLine={{ stroke: 'rgba(255,255,255,0.06)' }}
             ticks={[0, 64, 128, 192, 255]}
           />
           <YAxis hide domain={[0, maxV * 1.1]} />
@@ -184,20 +186,20 @@ function OverlayHistogram({ refHist, testHist }) {
           <Area
             type="monotone"
             dataKey="ref"
-            stroke="#38bdf8"
+            stroke={REF_COLOR}
             strokeWidth={1.5}
             fill="url(#grad-ref-overlay)"
             isAnimationActive={true}
-            animationDuration={600}
+            animationDuration={500}
           />
           <Area
             type="monotone"
             dataKey="test"
-            stroke="#a78bfa"
+            stroke={TEST_COLOR}
             strokeWidth={1.5}
             fill="url(#grad-test-overlay)"
             isAnimationActive={true}
-            animationDuration={700}
+            animationDuration={600}
           />
         </AreaChart>
       </ResponsiveContainer>
@@ -225,8 +227,8 @@ export default function HistogramView({ refData, testData }) {
     <div className="metric-view">
       {/* Side-by-side individual histograms */}
       <div className="histogram-grid">
-        <SingleHistogram hist={refHist} label="Reference" accentColor="#38bdf8" />
-        <SingleHistogram hist={testHist} label="Test" accentColor="#a78bfa" />
+        <SingleHistogram hist={refHist} label="Reference" accentColor={REF_COLOR} />
+        <SingleHistogram hist={testHist} label="Test" accentColor={TEST_COLOR} />
       </div>
 
       {/* Overlay comparison chart */}

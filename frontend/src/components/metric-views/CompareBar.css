@@ -2,7 +2,7 @@
 .compare-bar {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
 }
 
 .compare-bar__header {
@@ -12,78 +12,78 @@
 }
 
 .compare-bar__label {
-  font-size: 0.72rem;
-  font-weight: 600;
+  font-size: 0.7rem;
+  font-weight: 550;
   color: var(--text-secondary);
   text-transform: uppercase;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.05em;
 }
 
 /* ===== Delta Badge ===== */
 .compare-bar__delta {
-  font-size: 0.68rem;
-  font-weight: 700;
+  font-size: 0.65rem;
+  font-weight: 650;
   font-family: var(--font-mono);
-  padding: 2px 8px;
-  border-radius: var(--radius-full);
+  padding: 1px 7px;
+  border-radius: var(--radius-sm);
   letter-spacing: -0.01em;
 }
 
 .compare-bar__delta--good {
-  color: #34d399;
-  background: rgba(52, 211, 153, 0.12);
-  border: 1px solid rgba(52, 211, 153, 0.25);
+  color: #4ade80;
+  background: rgba(74, 222, 128, 0.08);
+  border: 1px solid rgba(74, 222, 128, 0.15);
 }
 
 .compare-bar__delta--bad {
   color: #f87171;
-  background: rgba(248, 113, 113, 0.12);
-  border: 1px solid rgba(248, 113, 113, 0.25);
+  background: rgba(248, 113, 113, 0.08);
+  border: 1px solid rgba(248, 113, 113, 0.15);
 }
 
 .compare-bar__delta--neutral {
   color: var(--text-tertiary);
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
 }
 
 /* ===== Tracks ===== */
 .compare-bar__tracks {
   display: flex;
   flex-direction: column;
-  gap: 7px;
+  gap: 5px;
 }
 
 .compare-bar__row {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
 }
 
 /* REF / TEST labels */
 .compare-bar__tag {
-  font-size: 0.56rem;
+  font-size: 0.54rem;
   font-weight: 700;
   letter-spacing: 0.08em;
   font-family: var(--font-mono);
-  width: 32px;
+  width: 30px;
   text-align: right;
   flex-shrink: 0;
 }
 
 .compare-bar__tag--ref {
-  color: #38bdf8;
+  color: var(--color-ref);
 }
 
 .compare-bar__tag--test {
-  color: #a78bfa;
+  color: var(--color-test);
 }
 
 /* Track background */
 .compare-bar__track {
   flex: 1;
-  height: 7px;
-  background: rgba(255, 255, 255, 0.06);
+  height: 6px;
+  background: rgba(255, 255, 255, 0.04);
   border-radius: var(--radius-full);
   overflow: hidden;
 }
@@ -92,38 +92,34 @@
 .compare-bar__fill {
   height: 100%;
   border-radius: var(--radius-full);
-  transition: width 800ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  transition: width 700ms cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .compare-bar__fill--ref {
-  background: linear-gradient(90deg, #0284c7, #38bdf8);
-  box-shadow: 0 0 8px rgba(56, 189, 248, 0.3);
+  background: linear-gradient(90deg, #4a8ec0, var(--color-ref));
 }
 
 .compare-bar__fill--test {
-  background: linear-gradient(90deg, #7c3aed, #a78bfa);
-  box-shadow: 0 0 8px rgba(167, 139, 250, 0.3);
+  background: linear-gradient(90deg, #7c5dbb, var(--color-test));
 }
 
 /* Win state — test beats ref */
 .compare-bar__fill--win {
-  background: linear-gradient(90deg, #059669, #34d399);
-  box-shadow: 0 0 10px rgba(52, 211, 153, 0.35);
+  background: linear-gradient(90deg, #22c55e, #4ade80);
 }
 
 /* Lose state — test worse than ref */
 .compare-bar__fill--lose {
   background: linear-gradient(90deg, #dc2626, #f87171);
-  box-shadow: 0 0 10px rgba(248, 113, 113, 0.35);
 }
 
 /* Value text */
 .compare-bar__value {
-  font-size: 0.72rem;
+  font-size: 0.7rem;
   font-weight: 600;
   font-family: var(--font-mono);
   color: var(--text-primary);
-  min-width: 52px;
+  min-width: 48px;
   text-align: right;
   flex-shrink: 0;
 }

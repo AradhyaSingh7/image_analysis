@@ -1,20 +1,22 @@
-/* ===== Metric Tabs Container ===== */
+/* ===== Metric Tabs — clean segmented style ===== */
 .metric-tabs {
   position: relative;
   width: 100%;
 }
 
-/* Horizontal scroll without showing scrollbar */
 .metric-tabs__scroll {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 2px;
   overflow-x: auto;
-  padding: 4px 2px 8px;
+  padding: 3px;
   scrollbar-width: none;
   -ms-overflow-style: none;
   justify-content: center;
   flex-wrap: wrap;
+  background: rgba(255, 255, 255, 0.025);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
 }
 
 .metric-tabs__scroll::-webkit-scrollbar {
@@ -26,80 +28,73 @@
   position: relative;
   display: inline-flex;
   align-items: center;
-  gap: 7px;
-  min-height: 34px;
-  padding: 0 16px;
-  border-radius: var(--radius-full);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(255, 255, 255, 0.03);
-  color: var(--text-secondary);
+  gap: 6px;
+  min-height: 32px;
+  padding: 0 14px;
+  border-radius: var(--radius-md);
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--text-tertiary);
   font-family: var(--font-sans);
-  font-size: 0.78rem;
-  font-weight: 600;
+  font-size: 0.74rem;
+  font-weight: 550;
   cursor: pointer;
-  transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all var(--transition-base);
   white-space: nowrap;
   user-select: none;
-  letter-spacing: -0.01em;
+  letter-spacing: -0.005em;
 }
 
 .metric-tab:hover:not(.metric-tab--disabled) {
-  border-color: color-mix(in srgb, var(--tab-color) 40%, transparent);
-  background: color-mix(in srgb, var(--tab-color) 10%, transparent);
-  color: var(--text-primary);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 16px color-mix(in srgb, var(--tab-color) 20%, transparent);
+  color: var(--text-secondary);
+  background: rgba(255, 255, 255, 0.04);
 }
 
 /* ===== Active State ===== */
 .metric-tab--active {
-  border-color: color-mix(in srgb, var(--tab-color) 55%, transparent);
-  background: color-mix(in srgb, var(--tab-color) 15%, transparent);
+  background: rgba(255, 255, 255, 0.07);
   color: var(--text-primary);
-  box-shadow:
-    0 0 0 1px color-mix(in srgb, var(--tab-color) 25%, transparent),
-    0 4px 20px color-mix(in srgb, var(--tab-color) 20%, transparent),
-    inset 0 1px 0 color-mix(in srgb, var(--tab-color) 15%, transparent);
+  border-color: rgba(255, 255, 255, 0.06);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
 }
 
 .metric-tab--active .metric-tab__icon {
   color: var(--tab-color);
-  filter: drop-shadow(0 0 6px var(--tab-color));
+  opacity: 0.9;
 }
 
 /* Active indicator dot */
 .metric-tab__dot {
   position: absolute;
-  bottom: -1px;
+  bottom: 3px;
   left: 50%;
   transform: translateX(-50%);
   width: 3px;
   height: 3px;
   border-radius: 50%;
   background: var(--tab-color);
-  box-shadow: 0 0 6px var(--tab-color);
+  opacity: 0.7;
 }
 
 /* ===== Disabled State ===== */
 .metric-tab--disabled {
-  opacity: 0.35;
+  opacity: 0.3;
   cursor: not-allowed;
 }
 
 .metric-tab--disabled:hover {
   transform: none;
-  border-color: rgba(255, 255, 255, 0.08);
-  background: rgba(255, 255, 255, 0.03);
-  color: var(--text-secondary);
-  box-shadow: none;
+  background: transparent;
+  color: var(--text-tertiary);
 }
 
 /* ===== Icon ===== */
 .metric-tab__icon {
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   color: var(--text-tertiary);
   line-height: 1;
-  transition: all 200ms ease;
+  transition: color var(--transition-base);
+  opacity: 0.6;
 }
 
 .metric-tab__label {
@@ -111,12 +106,12 @@
   .metric-tabs__scroll {
     justify-content: flex-start;
     flex-wrap: nowrap;
-    padding-bottom: 10px;
+    padding: 3px;
   }
 
   .metric-tab {
-    font-size: 0.72rem;
+    font-size: 0.7rem;
     min-height: 30px;
-    padding: 0 12px;
+    padding: 0 10px;
   }
 }

@@ -15,7 +15,7 @@ export default function SharpnessView({ refData, testData }) {
       <div className="metric-view__hero">
         <div className="hero-stat hero-stat--ref">
           <span className="hero-stat__label">Reference</span>
-          <span className="hero-stat__value" style={{ color: '#38bdf8' }}>
+          <span className="hero-stat__value" style={{ color: 'var(--color-ref)' }}>
             {refData.laplacian_variance.toFixed(0)}
           </span>
           <span className="hero-stat__unit">Laplacian Var.</span>
@@ -30,7 +30,7 @@ export default function SharpnessView({ refData, testData }) {
 
         <div className="hero-stat hero-stat--test">
           <span className="hero-stat__label">Test</span>
-          <span className="hero-stat__value" style={{ color: '#a78bfa' }}>
+          <span className="hero-stat__value" style={{ color: 'var(--color-test)' }}>
             {testData.laplacian_variance.toFixed(0)}
           </span>
           <span className="hero-stat__unit">Laplacian Var.</span>

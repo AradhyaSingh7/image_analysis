@@ -3,14 +3,14 @@ import './views.css';
 
 export default function NoiseView({ refData, testData }) {
   const channels = ['B', 'G', 'R'];
-  const channelColors = { B: '#60a5fa', G: '#34d399', R: '#f87171' };
+  const channelColors = { B: '#60a5fa', G: '#4ade80', R: '#f87171' };
 
   return (
     <div className="metric-view">
       <div className="metric-view__hero">
         <div className="hero-stat hero-stat--ref">
           <span className="hero-stat__label">Reference SNR</span>
-          <span className="hero-stat__value" style={{ color: '#38bdf8' }}>
+          <span className="hero-stat__value" style={{ color: 'var(--color-ref)' }}>
             {refData.snr_db.toFixed(1)}
           </span>
           <span className="hero-stat__unit">dB</span>
@@ -24,7 +24,7 @@ export default function NoiseView({ refData, testData }) {
 
         <div className="hero-stat hero-stat--test">
           <span className="hero-stat__label">Test SNR</span>
-          <span className="hero-stat__value" style={{ color: '#a78bfa' }}>
+          <span className="hero-stat__value" style={{ color: 'var(--color-test)' }}>
             {testData.snr_db.toFixed(1)}
           </span>
           <span className="hero-stat__unit">dB</span>

@@ -4,21 +4,21 @@ import './views.css';
 function DeltaEGauge({ value, label, color }) {
   const pct = Math.min((value / 10) * 100, 100);
   const verdict = value < 2 ? 'Excellent' : value < 5 ? 'Good' : 'Needs Work';
-  const vColor = value < 2 ? '#34d399' : value < 5 ? '#fbbf24' : '#f87171';
+  const vColor = value < 2 ? '#4ade80' : value < 5 ? '#facc15' : '#f87171';
   return (
     <div className="delta-gauge">
       <div className="delta-gauge__ring">
         <svg viewBox="0 0 80 80" width="80" height="80">
-          <circle cx="40" cy="40" r="32" fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="7" />
+          <circle cx="40" cy="40" r="32" fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth="6" />
           <circle
             cx="40" cy="40" r="32" fill="none"
-            stroke={color} strokeWidth="7"
+            stroke={color} strokeWidth="6"
             strokeLinecap="round"
             strokeDasharray={`${(pct / 100) * (2 * Math.PI * 32)} ${2 * Math.PI * 32}`}
             strokeDashoffset={2 * Math.PI * 32 * 0.25}
-            style={{ transition: 'stroke-dasharray 900ms cubic-bezier(0.34,1.56,0.64,1)', filter: `drop-shadow(0 0 5px ${color}60)` }}
+            style={{ transition: 'stroke-dasharray 800ms ease', opacity: 0.75 }}
           />
-          <text x="40" y="43" textAnchor="middle" fill={color} fontSize="12" fontWeight="700" fontFamily="monospace">
+          <text x="40" y="43" textAnchor="middle" fill={color} fontSize="12" fontWeight="700" fontFamily="var(--font-mono)">
             {value.toFixed(2)}
           </text>
         </svg>
@@ -53,8 +53,8 @@ export default function ColorView({ refData, testData }) {
   return (
     <div className="metric-view">
       <div className="metric-view__gauges">
-        <DeltaEGauge value={refData.mean_delta_e} label="Ref Mean ΔE" color="#38bdf8" />
-        <DeltaEGauge value={testData.mean_delta_e} label="Test Mean ΔE" color="#a78bfa" />
+        <DeltaEGauge value={refData.mean_delta_e} label="Ref Mean ΔE" color="var(--color-ref)" />
+        <DeltaEGauge value={testData.mean_delta_e} label="Test Mean ΔE" color="var(--color-test)" />
       </div>
 
       <CompareTable rows={[

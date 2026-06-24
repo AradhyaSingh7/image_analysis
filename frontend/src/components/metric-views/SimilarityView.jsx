@@ -2,37 +2,37 @@ import './views.css';
 
 function SimilarityRing({ value, label, max = 1, unit = '', color, decimals = 4 }) {
   const pct = Math.min((value / max) * 100, 100);
-  const r = 42;
+  const r = 40;
   const circ = 2 * Math.PI * r;
   const filled = (pct / 100) * circ;
 
   const qualityLabel = pct >= 95 ? 'Excellent' : pct >= 80 ? 'Good' : pct >= 60 ? 'Fair' : 'Poor';
-  const qualityColor = pct >= 95 ? '#34d399' : pct >= 80 ? '#38bdf8' : pct >= 60 ? '#fbbf24' : '#f87171';
+  const qualityColor = pct >= 95 ? '#4ade80' : pct >= 80 ? 'var(--color-ref)' : pct >= 60 ? '#facc15' : '#f87171';
 
   return (
     <div className="sim-ring">
-      <svg viewBox="0 0 100 100" width="100" height="100">
+      <svg viewBox="0 0 100 100" width="96" height="96">
         {/* Track */}
-        <circle cx="50" cy="50" r={r} fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="8" />
+        <circle cx="50" cy="50" r={r} fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth="7" />
         {/* Fill */}
         <circle
           cx="50" cy="50" r={r}
           fill="none"
           stroke={color}
-          strokeWidth="8"
+          strokeWidth="7"
           strokeLinecap="round"
           strokeDasharray={`${filled} ${circ}`}
           strokeDashoffset={circ * 0.25}
           style={{
-            transition: 'stroke-dasharray 1000ms cubic-bezier(0.34,1.56,0.64,1)',
-            filter: `drop-shadow(0 0 6px ${color}70)`,
+            transition: 'stroke-dasharray 900ms ease',
+            opacity: 0.75,
           }}
         />
         {/* Value */}
-        <text x="50" y="46" textAnchor="middle" fill={color} fontSize="11" fontWeight="700" fontFamily="monospace">
+        <text x="50" y="46" textAnchor="middle" fill={color} fontSize="11" fontWeight="700" fontFamily="var(--font-mono)" opacity="0.9">
           {typeof value === 'number' ? value.toFixed(decimals) : value}
         </text>
-        <text x="50" y="58" textAnchor="middle" fill="rgba(255,255,255,0.35)" fontSize="7" fontFamily="monospace">
+        <text x="50" y="58" textAnchor="middle" fill="rgba(255,255,255,0.25)" fontSize="7" fontFamily="var(--font-mono)">
           {unit}
         </text>
       </svg>
@@ -57,7 +57,7 @@ export default function SimilarityView({ data }) {
       <div className="sim-hero">
         <span className="sim-hero__label">Overall Similarity</span>
         <span className="sim-hero__value" style={{
-          background: 'linear-gradient(135deg, #38bdf8, #a78bfa)',
+          background: 'linear-gradient(135deg, var(--color-ref), var(--color-test))',
           WebkitBackgroundClip: 'text',
           WebkitTextFillColor: 'transparent',
           backgroundClip: 'text',
@@ -75,7 +75,7 @@ export default function SimilarityView({ data }) {
           label="Histogram Corr."
           max={1}
           unit="corr"
-          color="#38bdf8"
+          color="var(--color-ref)"
           decimals={4}
         />
         <SimilarityRing
@@ -83,7 +83,7 @@ export default function SimilarityView({ data }) {
           label="MSE Similarity"
           max={1}
           unit="norm"
-          color="#a78bfa"
+          color="var(--color-test)"
           decimals={4}
         />
         <SimilarityRing
@@ -91,7 +91,7 @@ export default function SimilarityView({ data }) {
           label="PSNR"
           max={50}
           unit="dB"
-          color="#34d399"
+          color="#4ade80"
           decimals={2}
         />
       </div>

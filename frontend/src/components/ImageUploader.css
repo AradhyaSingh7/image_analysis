@@ -12,14 +12,14 @@
 }
 
 .uploader__label {
-  font-size: 0.88rem;
+  font-size: 0.86rem;
   font-weight: 600;
   color: var(--text-primary);
   letter-spacing: -0.01em;
 }
 
 .uploader__sublabel {
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   font-weight: 400;
   color: var(--text-tertiary);
 }
@@ -27,7 +27,7 @@
 /* ===== Drop Zone ===== */
 .uploader__zone {
   position: relative;
-  min-height: 308px;
+  min-height: 300px;
   border: 1.5px dashed var(--border-medium);
   border-radius: var(--radius-xl);
   background: var(--bg-glass);
@@ -42,7 +42,6 @@
 .uploader__zone:hover {
   border-color: var(--border-accent);
   background: var(--bg-glass-hover);
-  box-shadow: var(--shadow-glow);
 }
 
 .uploader__zone:focus-visible {
@@ -53,15 +52,14 @@
 .uploader__zone--drag {
   border-color: var(--accent-primary);
   background: var(--accent-glow);
-  box-shadow: 0 0 60px rgba(14, 165, 233, 0.15);
-  transform: scale(1.01);
+  transform: scale(1.005);
   animation: border-flow 1.5s ease infinite;
 }
 
 .uploader__zone--has-image {
   border-style: solid;
   border-color: var(--border-subtle);
-  min-height: 285px;
+  min-height: 280px;
 }
 
 .uploader__zone--has-image:hover {
@@ -87,11 +85,11 @@
 }
 
 .uploader__icon-wrapper {
-  width: 66px;
-  height: 66px;
+  width: 60px;
+  height: 60px;
   border-radius: var(--radius-lg);
-  background: linear-gradient(135deg, rgba(14, 165, 233, 0.08) 0%, rgba(56, 189, 248, 0.08) 100%);
-  border: 1px solid rgba(14, 165, 233, 0.12);
+  background: rgba(59, 157, 214, 0.06);
+  border: 1px solid rgba(59, 157, 214, 0.1);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -100,15 +98,14 @@
 }
 
 .uploader__zone:hover .uploader__icon-wrapper {
-  background: linear-gradient(135deg, rgba(14, 165, 233, 0.15) 0%, rgba(56, 189, 248, 0.15) 100%);
-  border-color: rgba(14, 165, 233, 0.25);
+  background: rgba(59, 157, 214, 0.1);
+  border-color: rgba(59, 157, 214, 0.2);
   transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(14, 165, 233, 0.12);
 }
 
 .uploader__icon {
-  width: 33px;
-  height: 33px;
+  width: 30px;
+  height: 30px;
 }
 
 .uploader__text-group {
@@ -118,7 +115,7 @@
 }
 
 .uploader__text-primary {
-  font-size: 0.85rem;
+  font-size: 0.84rem;
   font-weight: 500;
   color: var(--text-secondary);
 }
@@ -127,7 +124,7 @@
   color: var(--text-accent);
   font-weight: 600;
   text-decoration: underline;
-  text-decoration-color: rgba(14, 165, 233, 0.3);
+  text-decoration-color: rgba(59, 157, 214, 0.25);
   text-underline-offset: 3px;
   transition: all var(--transition-fast);
 }
@@ -137,7 +134,7 @@
 }
 
 .uploader__text-secondary {
-  font-size: 0.75rem;
+  font-size: 0.73rem;
   color: var(--text-tertiary);
 }
 
@@ -148,13 +145,13 @@
   align-items: center;
   gap: var(--space-md);
   color: var(--text-secondary);
-  font-size: 0.82rem;
+  font-size: 0.8rem;
   font-weight: 500;
 }
 
 .uploader__spinner {
-  width: 33px;
-  height: 33px;
+  width: 30px;
+  height: 30px;
   border: 2px solid var(--border-subtle);
   border-top-color: var(--accent-primary);
   border-radius: 50%;
@@ -166,7 +163,7 @@
   position: relative;
   width: 100%;
   height: 100%;
-  min-height: 285px;
+  min-height: 280px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -176,11 +173,11 @@
 .uploader__preview-img {
   width: 100%;
   height: 100%;
-  min-height: 285px;
-  max-height: 345px;
+  min-height: 280px;
+  max-height: 340px;
   object-fit: contain;
   display: block;
-  animation: scaleIn 0.4s var(--transition-spring) both;
+  animation: scaleIn 0.35s ease both;
   padding: var(--space-md);
 }
 
@@ -191,7 +188,7 @@
   display: flex;
   gap: var(--space-xs);
   opacity: 0;
-  transform: translateY(-4px);
+  transform: translateY(-3px);
   transition: all var(--transition-base);
 }
 
@@ -201,12 +198,12 @@
 }
 
 .uploader__remove-btn {
-  width: 29px;
-  height: 29px;
+  width: 28px;
+  height: 28px;
   border-radius: var(--radius-md);
   border: none;
-  background: rgba(248, 113, 113, 0.15);
-  backdrop-filter: blur(12px);
+  background: rgba(248, 113, 113, 0.12);
+  backdrop-filter: blur(10px);
   color: var(--danger);
   cursor: pointer;
   display: flex;
@@ -216,85 +213,81 @@
 }
 
 .uploader__remove-btn:hover {
-  background: rgba(248, 113, 113, 0.3);
-  transform: scale(1.05);
+  background: rgba(248, 113, 113, 0.25);
+  transform: scale(1.04);
 }
 
 .uploader__change-btn {
-  height: 29px;
-  padding: 0 12px;
+  height: 28px;
+  padding: 0 10px;
   border-radius: var(--radius-md);
   border: none;
-  background: rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(12px);
+  background: rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(10px);
   color: var(--text-primary);
   cursor: pointer;
   display: flex;
   align-items: center;
   gap: 5px;
   font-family: var(--font-sans);
-  font-size: 0.72rem;
+  font-size: 0.7rem;
   font-weight: 500;
   transition: all var(--transition-fast);
 }
 
 .uploader__change-btn:hover {
-  background: rgba(255, 255, 255, 0.15);
-  transform: scale(1.03);
+  background: rgba(255, 255, 255, 0.12);
+  transform: scale(1.02);
 }
 
 /* ===== Info Button ===== */
 .uploader__info-btn {
-  width: 29px;
-  height: 29px;
+  width: 28px;
+  height: 28px;
   border-radius: var(--radius-md);
-  border: 1px solid rgba(14, 165, 233, 0.2);
-  background: rgba(14, 165, 233, 0.1);
-  backdrop-filter: blur(12px);
+  border: 1px solid rgba(59, 157, 214, 0.15);
+  background: rgba(59, 157, 214, 0.08);
+  backdrop-filter: blur(10px);
   color: var(--accent-secondary);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   line-height: 1;
   transition: all var(--transition-fast);
 }
 
 .uploader__info-btn:hover {
-  background: rgba(14, 165, 233, 0.25);
-  border-color: rgba(14, 165, 233, 0.45);
-  transform: scale(1.08);
-  box-shadow: 0 0 14px rgba(14, 165, 233, 0.2);
+  background: rgba(59, 157, 214, 0.18);
+  border-color: rgba(59, 157, 214, 0.3);
+  transform: scale(1.05);
 }
 
 .uploader__info-btn--active {
-  background: rgba(14, 165, 233, 0.3);
-  border-color: rgba(14, 165, 233, 0.55);
-  box-shadow: 0 0 16px rgba(14, 165, 233, 0.25);
+  background: rgba(59, 157, 214, 0.22);
+  border-color: rgba(59, 157, 214, 0.4);
 }
 
-/* ===== Metadata Overlay (Glassmorphism) ===== */
+/* ===== Metadata Overlay ===== */
 .uploader__metadata {
   position: absolute;
   bottom: 0;
   left: 0;
   right: 0;
   z-index: 5;
-  /* ~28% of preview height */
   max-height: 30%;
-  padding: 10px 14px 8px;
-  background: rgba(10, 11, 18, 0.72);
-  backdrop-filter: blur(18px) saturate(1.4);
-  -webkit-backdrop-filter: blur(18px) saturate(1.4);
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 9px 12px 7px;
+  background: rgba(9, 9, 14, 0.75);
+  backdrop-filter: blur(14px) saturate(1.3);
+  -webkit-backdrop-filter: blur(14px) saturate(1.3);
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
 
-  /* Slide-up animation */
   transform: translateY(100%);
   opacity: 0;
   transition:
-    transform 300ms cubic-bezier(0.22, 1, 0.36, 1),
-    opacity 300ms cubic-bezier(0.22, 1, 0.36, 1);
+    transform 250ms cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 250ms cubic-bezier(0.22, 1, 0.36, 1);
   pointer-events: none;
 
   display: flex;
@@ -304,7 +297,6 @@
   overflow: hidden;
 }
 
-/* Show on hover over the image zone OR when toggled via info button */
 .uploader__zone:hover .uploader__metadata,
 .uploader__metadata--visible {
   transform: translateY(0);
@@ -316,18 +308,18 @@
 .uploader__metadata-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 3px 14px;
+  gap: 3px 12px;
 }
 
 .uploader__metadata-row {
   display: flex;
   align-items: center;
   gap: 5px;
-  min-height: 18px;
+  min-height: 17px;
 }
 
 .uploader__metadata-icon {
-  font-size: 0.68rem;
+  font-size: 0.66rem;
   line-height: 1;
   flex-shrink: 0;
   width: 14px;
@@ -335,17 +327,17 @@
 }
 
 .uploader__metadata-label {
-  font-size: 0.62rem;
+  font-size: 0.6rem;
   font-weight: 600;
   color: var(--text-tertiary);
   text-transform: uppercase;
   letter-spacing: 0.04em;
   white-space: nowrap;
-  min-width: 52px;
+  min-width: 48px;
 }
 
 .uploader__metadata-value {
-  font-size: 0.68rem;
+  font-size: 0.66rem;
   font-weight: 500;
   color: var(--text-primary);
   font-family: var(--font-mono);
@@ -361,11 +353,11 @@
   border: none;
   padding: 2px 0;
   font-family: var(--font-sans);
-  font-size: 0.6rem;
+  font-size: 0.58rem;
   font-weight: 600;
   color: var(--accent-secondary);
   cursor: pointer;
-  opacity: 0.8;
+  opacity: 0.7;
   transition: all var(--transition-fast);
   letter-spacing: 0.02em;
 }
@@ -384,39 +376,36 @@
   left: 0;
   right: 0;
   padding: var(--space-md) var(--space-lg);
-  background: linear-gradient(to top, rgba(0, 0, 0, 0.7) 0%, transparent 100%);
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.6) 0%, transparent 100%);
   display: flex;
   align-items: center;
   justify-content: space-between;
   opacity: 0;
   transition: opacity var(--transition-base);
-  /* Hidden behind metadata overlay when metadata is visible */
   z-index: 1;
 }
 
-/* Show file info on hover only when metadata overlay is NOT visible */
 .uploader__zone:hover .uploader__file-info {
   opacity: 1;
 }
 
-/* When metadata is visible, hide file info to avoid overlap */
 .uploader__zone:hover .uploader__metadata ~ .uploader__file-info,
 .uploader__metadata--visible ~ .uploader__file-info {
   opacity: 0;
 }
 
 .uploader__file-name {
-  font-size: 0.72rem;
+  font-size: 0.7rem;
   font-weight: 500;
   color: var(--text-primary);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 190px;
+  max-width: 180px;
 }
 
 .uploader__file-size {
-  font-size: 0.68rem;
+  font-size: 0.66rem;
   font-weight: 500;
   color: var(--text-tertiary);
   font-family: var(--font-mono);
@@ -425,20 +414,20 @@
 /* ===== Responsive ===== */
 @media (max-width: 768px) {
   .uploader__zone {
-    min-height: 240px;
+    min-height: 235px;
   }
 
   .uploader__zone--has-image {
-    min-height: 225px;
+    min-height: 220px;
   }
 
   .uploader__preview {
-    min-height: 225px;
+    min-height: 220px;
   }
 
   .uploader__preview-img {
-    min-height: 225px;
-    max-height: 285px;
+    min-height: 220px;
+    max-height: 280px;
   }
 
   .uploader__preview-overlay {
@@ -450,7 +439,6 @@
     opacity: 1;
   }
 
-  /* On mobile, metadata is only shown via info button click, not hover */
   .uploader__zone:hover .uploader__metadata {
     transform: translateY(100%);
     opacity: 0;
@@ -462,13 +450,12 @@
     pointer-events: auto !important;
   }
 
-  /* Metadata grid goes single column on small screens */
   .uploader__metadata-grid {
     grid-template-columns: 1fr;
   }
 
   .uploader__metadata {
     max-height: 40%;
-    padding: 8px 12px 6px;
+    padding: 7px 10px 5px;
   }
 }

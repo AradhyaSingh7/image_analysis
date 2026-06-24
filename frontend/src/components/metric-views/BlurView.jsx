@@ -23,7 +23,7 @@ export default function BlurView({ refData, testData }) {
       <div className="metric-view__hero">
         <div className="hero-stat hero-stat--ref">
           <span className="hero-stat__label">Reference</span>
-          <span className="hero-stat__value" style={{ color: '#38bdf8' }}>
+          <span className="hero-stat__value" style={{ color: 'var(--color-ref)' }}>
             {(refData.blurry_region_pct).toFixed(1)}
           </span>
           <span className="hero-stat__unit">% blurry area</span>
@@ -38,7 +38,7 @@ export default function BlurView({ refData, testData }) {
 
         <div className="hero-stat hero-stat--test">
           <span className="hero-stat__label">Test</span>
-          <span className="hero-stat__value" style={{ color: '#a78bfa' }}>
+          <span className="hero-stat__value" style={{ color: 'var(--color-test)' }}>
             {(testData.blurry_region_pct).toFixed(1)}
           </span>
           <span className="hero-stat__unit">% blurry area</span>

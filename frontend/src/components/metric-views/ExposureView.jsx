@@ -5,7 +5,7 @@ function BrightnessGauge({ value, label, color }) {
   const r = 36;
   const pct = Math.min((value / 255) * 100, 100);
   const zone = value < 64 ? 'Under' : value > 200 ? 'Over' : 'Good';
-  const zoneColor = value < 64 ? '#f87171' : value > 200 ? '#fbbf24' : '#34d399';
+  const zoneColor = value < 64 ? '#f87171' : value > 200 ? '#facc15' : '#4ade80';
 
   return (
     <div className="brightness-gauge">
@@ -13,20 +13,20 @@ function BrightnessGauge({ value, label, color }) {
         <path
           d="M 9 45 A 36 36 0 0 1 81 45"
           fill="none"
-          stroke="rgba(255,255,255,0.07)"
-          strokeWidth="7"
+          stroke="rgba(255,255,255,0.05)"
+          strokeWidth="6"
           strokeLinecap="round"
         />
         <path
           d="M 9 45 A 36 36 0 0 1 81 45"
           fill="none"
           stroke={color}
-          strokeWidth="7"
+          strokeWidth="6"
           strokeLinecap="round"
           strokeDasharray={`${(pct / 100) * (Math.PI * r)} ${Math.PI * r}`}
-          style={{ transition: 'stroke-dasharray 900ms cubic-bezier(0.34,1.56,0.64,1)', filter: `drop-shadow(0 0 4px ${color}60)` }}
+          style={{ transition: 'stroke-dasharray 800ms ease', opacity: 0.8 }}
         />
-        <text x="45" y="46" textAnchor="middle" fill={color} fontSize="13" fontWeight="700" fontFamily="monospace">
+        <text x="45" y="46" textAnchor="middle" fill={color} fontSize="13" fontWeight="700" fontFamily="var(--font-mono)">
           {value.toFixed(0)}
         </text>
       </svg>
@@ -41,8 +41,8 @@ export default function ExposureView({ refData, testData }) {
   return (
     <div className="metric-view">
       <div className="metric-view__gauges">
-        <BrightnessGauge value={refData.mean_brightness} label="Reference" color="#38bdf8" />
-        <BrightnessGauge value={testData.mean_brightness} label="Test" color="#a78bfa" />
+        <BrightnessGauge value={refData.mean_brightness} label="Reference" color="var(--color-ref)" />
+        <BrightnessGauge value={testData.mean_brightness} label="Test" color="var(--color-test)" />
       </div>
 
       <CompareTable rows={[
@@ -56,8 +56,8 @@ export default function ExposureView({ refData, testData }) {
       {/* Percentile strip */}
       <div className="metric-view__section-label">Tone Percentiles (p5 → p95)</div>
       <div className="percentile-strips">
-        {[{ label: 'REF', data: refData.percentiles, color: '#38bdf8' },
-          { label: 'TST', data: testData.percentiles, color: '#a78bfa' }].map(({ label, data, color }) => (
+        {[{ label: 'REF', data: refData.percentiles, color: 'var(--color-ref)' },
+          { label: 'TST', data: testData.percentiles, color: 'var(--color-test)' }].map(({ label, data, color }) => (
           <div className="percentile-strip" key={label}>
             <span className="percentile-strip__tag" style={{ color }}>{label}</span>
             <div className="percentile-strip__bar">
