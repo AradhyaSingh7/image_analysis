@@ -28,7 +28,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 3px;
+  gap: 8px;
   flex: 1;
   min-width: 0;
 }
@@ -39,6 +39,18 @@
   text-transform: uppercase;
   letter-spacing: 0.08em;
   color: var(--text-tertiary);
+  margin: 0;
+}
+
+.hero-stat__gauge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 0;
+}
+
+.hero-stat__gauge svg {
+  display: block;
 }
 
 .hero-stat__value {

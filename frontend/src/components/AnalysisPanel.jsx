@@ -7,18 +7,24 @@ import BlurView from './metric-views/BlurView';
 import DynamicRangeView from './metric-views/DynamicRangeView';
 import SimilarityView from './metric-views/SimilarityView';
 import HistogramView from './metric-views/HistogramView';
+import LCAView from './metric-views/LCAView';
+import TonalResponseView from './metric-views/TonalResponseView';
+import WhiteBalanceView from './metric-views/WhiteBalanceView';
 import './AnalysisPanel.css';
 
 /** Map metric key → view component factory */
 const VIEW_MAP = {
-  sharpness: (data) => <SharpnessView refData={data.reference.sharpness} testData={data.test.sharpness} />,
-  noise: (data) => <NoiseView refData={data.reference.noise} testData={data.test.noise} />,
-  exposure: (data) => <ExposureView refData={data.reference.exposure} testData={data.test.exposure} />,
+  sharpness:      (data) => <SharpnessView refData={data.reference.sharpness} testData={data.test.sharpness} />,
+  noise:          (data) => <NoiseView refData={data.reference.noise} testData={data.test.noise} />,
+  exposure:       (data) => <ExposureView refData={data.reference.exposure} testData={data.test.exposure} />,
   color_accuracy: (data) => <ColorView refData={data.reference.color_accuracy} testData={data.test.color_accuracy} />,
-  blur: (data) => <BlurView refData={data.reference.blur} testData={data.test.blur} />,
-  dynamic_range: (data) => <DynamicRangeView refData={data.reference.dynamic_range} testData={data.test.dynamic_range} />,
-  histogram: (data) => <HistogramView refData={data.reference} testData={data.test} />,
-  similarity: (data) => <SimilarityView data={data.similarity} />,
+  blur:           (data) => <BlurView refData={data.reference.blur} testData={data.test.blur} />,
+  dynamic_range:  (data) => <DynamicRangeView refData={data.reference.dynamic_range} testData={data.test.dynamic_range} />,
+  histogram:      (data) => <HistogramView refData={data.reference} testData={data.test} />,
+  lca:            (data) => <LCAView refData={data.reference.lca} testData={data.test.lca} />,
+  tonal_response: (data) => <TonalResponseView refData={data.reference.tonal_response} testData={data.test.tonal_response} />,
+  white_balance:  (data) => <WhiteBalanceView refData={data.reference.white_balance} testData={data.test.white_balance} />,
+  similarity:     (data) => <SimilarityView data={data.similarity} />,
 };
 
 /** Skeleton loader shown while API call is in flight */
@@ -71,6 +77,27 @@ export default function AnalysisPanel({ data, isAnalyzing, activeMetric, metrics
 
     const viewFn = VIEW_MAP[activeMetric];
     if (!viewFn) return <p className="panel-placeholder__text">Unknown metric.</p>;
+
+    // Chart-dependent metrics (tonal_response, white_balance) may be null when
+    // ArUco markers are not detected in the image.
+    const chartDependent = ['tonal_response', 'white_balance', 'color_accuracy'];
+    if (chartDependent.includes(activeMetric)) {
+      if (!data.reference[activeMetric] || !data.test[activeMetric]) {
+        return (
+          <div className="metric-view metric-view--empty">
+            <div className="empty-state">
+              <div className="empty-state__icon">⬡</div>
+              <p className="empty-state__title">Chart not detected</p>
+              <p className="empty-state__desc">
+                This metric requires the ColorChecker chart with ArUco corner markers.
+                No markers were found in one or both images.
+              </p>
+            </div>
+          </div>
+        );
+      }
+    }
+
     return viewFn(data);
   };
 

@@ -21,7 +21,10 @@ from analyze_chart import (
     analyze_color_accuracy,
     analyze_dynamic_range,
     analyze_exposure,
+    analyze_lca,
     analyze_sharpness,
+    analyze_tonal_response,
+    analyze_white_balance,
     compute_similarity_from_arrays,
     detect_and_rectify_chart,
     estimate_noise,
@@ -74,20 +77,26 @@ def _analyze_single(image_path: str) -> dict:
         raise ValueError(f"Could not decode image: {image_path}")
 
     result = {
-        "sharpness":     analyze_sharpness(img),
-        "noise":         estimate_noise(img),
-        "exposure":      analyze_exposure(img),
-        "dynamic_range": analyze_dynamic_range(img),
-        "blur":          analyze_blur(img),
+        "sharpness":      analyze_sharpness(img),
+        "noise":          estimate_noise(img),
+        "exposure":       analyze_exposure(img),
+        "dynamic_range":  analyze_dynamic_range(img),
+        "blur":           analyze_blur(img),
         "color_accuracy": None,   # populated below if chart detected
-        "histogram":     generate_histogram(img),
+        "histogram":      generate_histogram(img),
+        "lca":            analyze_lca(img),
+        # chart-dependent metrics default to None
+        "tonal_response": None,
+        "white_balance":  None,
     }
 
     # Attempt chart detection — gracefully skip if markers not found
     rectified, _, chart_ok = detect_and_rectify_chart(img)
     if chart_ok:
-        _, patches_lab = extract_patches(rectified)
-        result["color_accuracy"] = analyze_color_accuracy(patches_lab)
+        patches_bgr, patches_lab = extract_patches(rectified)
+        result["color_accuracy"]  = analyze_color_accuracy(patches_lab)
+        result["tonal_response"]  = analyze_tonal_response(patches_lab, patches_bgr)
+        result["white_balance"]   = analyze_white_balance(patches_bgr)
 
     return result
 
