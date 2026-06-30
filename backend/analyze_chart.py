@@ -625,29 +625,7 @@ def analyze_tonal_response(patches_lab, patches_bgr):
  
  
 def analyze_white_balance(patches_bgr):
-    """
-    Estimates the camera's white balance error and approximate color temperature.
- 
-    How it works:
-      - The 6 neutral gray patches should have equal R, G, B values if
-        the camera's white balance is perfect (they're literally gray).
-      - Any deviation in the R:G or B:G ratio tells us the camera ran
-        warm (too red) or cool (too blue).
-      - We compute the mean R/G and B/G ratios across all neutral patches,
-        then compare to the ideal 1:1:1.
-      - We estimate Correlated Color Temperature (CCT) from the R/B ratio
-        using a simple empirical curve (this is a rough proxy, not
-        a precise spectrometer reading).
- 
-    Returns:
-      per_patch           — R/G, B/G ratios for each neutral patch
-      mean_rg_ratio       — average R/G (>1 = warm/reddish)
-      mean_bg_ratio       — average B/G (>1 = cool/bluish)
-      rg_error_pct        — % deviation of R from G
-      bg_error_pct        — % deviation of B from G
-      estimated_cct_K     — rough color temperature in Kelvin
-      wb_verdict          — "neutral" / "warm" / "cool" / "mixed"
-    """
+
     neutral_data = []
     rg_ratios, bg_ratios = [], []
  
@@ -681,15 +659,8 @@ def analyze_white_balance(patches_bgr):
     rg_error_pct = (mean_rg - 1.0) * 100
     bg_error_pct = (mean_bg - 1.0) * 100
  
-    # Rough CCT estimate from R/B ratio using an empirical regression.
-    # This approximates the daylight locus (Judd 1960 / McCamy 1992 simplified).
-    # The formula is: CCT ≈ A / (R/B)^B + offset
-    # More red than blue → warmer (lower K); more blue → cooler (higher K)
     rb_ratio = mean_rg / mean_bg if mean_bg > 0 else 1.0
-    # Empirical fit valid roughly 2500K–10000K:
-    # CCT(K) ≈ 3500 * (1/rb_ratio)^1.2 * 3500 ... simplified version:
-    # We use: CCT = n / rb + offset where n and offset come from daylight data
-    # A common practical approximation (Kelly 1963 / simpler form):
+
     estimated_cct = max(1500.0, min(15000.0, 5000.0 / (rb_ratio ** 0.8)))
  
     # Verdict
@@ -716,33 +687,270 @@ def analyze_white_balance(patches_bgr):
         "wb_verdict":       verdict,
     }
 # ─────────────────────────────────────────────────────────────────
+# GENERIC (REFERENCE-FREE) ANALYSIS FUNCTIONS
+# ─────────────────────────────────────────────────────────────────
+
+def analyze_color_generic(img):
+    """
+    Reference-free colour statistics for arbitrary images.
+    Does NOT attempt ΔE or any chart-based measurement.
+
+    Returns colorfulness, channel means, HSV stats, colour cast,
+    and dominant colours (via k-means on a small thumbnail).
+    """
+    h, w = img.shape[:2]
+
+    # --- Channel means (BGR → RGB for output) ---
+    b_mean, g_mean, r_mean = [float(img[:, :, c].mean()) for c in range(3)]
+
+    # --- Colorfulness (Hasler & Süsstrunk 2003) ---
+    R, G, B = img[:, :, 2].astype(np.float64), img[:, :, 1].astype(np.float64), img[:, :, 0].astype(np.float64)
+    rg = R - G
+    yb = 0.5 * (R + G) - B
+    sigma_rg, mu_rg = rg.std(), rg.mean()
+    sigma_yb, mu_yb = yb.std(), yb.mean()
+    sigma_rgyb = np.sqrt(sigma_rg ** 2 + sigma_yb ** 2)
+    mu_rgyb    = np.sqrt(mu_rg ** 2 + mu_yb ** 2)
+    colorfulness = float(sigma_rgyb + 0.3 * mu_rgyb)
+
+    # --- HSV statistics ---
+    hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV).astype(np.float64)
+    # Hue is 0-180 in OpenCV; convert to 0-360
+    hue_chan = hsv[:, :, 0] * 2.0
+    sat_chan = hsv[:, :, 1] / 255.0
+    val_chan = hsv[:, :, 2] / 255.0
+
+    hsv_stats = {
+        "mean_hue":           round(float(hue_chan.mean()), 2),
+        "std_hue":            round(float(hue_chan.std()), 2),
+        "mean_saturation":    round(float(sat_chan.mean()), 4),
+        "std_saturation":     round(float(sat_chan.std()), 4),
+        "mean_value":         round(float(val_chan.mean()), 4),
+    }
+
+    # --- Colour cast estimate ---
+    rb_diff = r_mean - b_mean
+    if rb_diff > 15:
+        color_cast = "warm"
+    elif rb_diff < -15:
+        color_cast = "cool"
+    else:
+        color_cast = "neutral"
+
+    # --- Dominant colours via k-means (on a small thumbnail for speed) ---
+    thumb_size = 64
+    thumb = cv2.resize(img, (thumb_size, thumb_size), interpolation=cv2.INTER_AREA)
+    pixels = thumb.reshape(-1, 3).astype(np.float32)
+
+    k = 5
+    criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 20, 1.0)
+    _, labels, centres = cv2.kmeans(pixels, k, None, criteria, 3, cv2.KMEANS_PP_CENTERS)
+
+    label_counts = np.bincount(labels.flatten(), minlength=k)
+    total = label_counts.sum()
+    dominant_colors = []
+    for idx in np.argsort(-label_counts):
+        bgr = centres[idx]
+        dominant_colors.append({
+            "rgb": [int(bgr[2]), int(bgr[1]), int(bgr[0])],
+            "percentage": round(float(label_counts[idx] / total * 100), 1),
+        })
+
+    return {
+        "colorfulness":    round(colorfulness, 2),
+        "channel_means":   {"R": round(r_mean, 2), "G": round(g_mean, 2), "B": round(b_mean, 2)},
+        "hsv_stats":       hsv_stats,
+        "color_cast":      color_cast,
+        "dominant_colors":  dominant_colors,
+    }
+
+
+def analyze_tonal_generic(img):
+  
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY).astype(np.float64)
+    total = gray.size
+
+    mean_brightness = float(gray.mean())
+    brightness_std  = float(gray.std())
+
+    g_min, g_max = float(gray.min()), float(gray.max())
+    michelson = (g_max - g_min) / (g_max + g_min) if (g_max + g_min) > 0 else 0.0
+    rms_contrast = float(np.sqrt(np.mean((gray - mean_brightness) ** 2)))
+
+    # Histogram entropy
+    hist = cv2.calcHist([gray.astype(np.uint8)], [0], None, [256], [0, 256]).flatten()
+    hn = hist / hist.sum()
+    entropy = float(-np.sum(hn[hn > 0] * np.log2(hn[hn > 0])))
+
+    # Zone percentages
+    shadow_pct    = float(np.sum(gray < 30) / total * 100)
+    midtone_pct   = float(np.sum((gray >= 30) & (gray <= 225)) / total * 100)
+    highlight_pct = float(np.sum(gray > 225) / total * 100)
+
+    # Dynamic range estimate
+    p1, p5, p25, p50, p75, p95, p99 = np.percentile(gray, [1, 5, 25, 50, 75, 95, 99])
+    dynamic_range_estimate = float(p99 - p1)
+
+    return {
+        "mean_brightness":        round(mean_brightness, 2),
+        "brightness_std":         round(brightness_std, 2),
+        "contrast_michelson":     round(michelson, 4),
+        "rms_contrast":           round(rms_contrast, 2),
+        "histogram_entropy":      round(entropy, 3),
+        "shadow_pct":             round(shadow_pct, 2),
+        "midtone_pct":            round(midtone_pct, 2),
+        "highlight_pct":          round(highlight_pct, 2),
+        "dynamic_range_estimate": round(dynamic_range_estimate, 2),
+        "percentiles": {
+            "p5":  int(p5),
+            "p25": int(p25),
+            "p50": int(p50),
+            "p75": int(p75),
+            "p95": int(p95),
+        },
+    }
+
+
+def analyze_wb_generic(img):
+    """
+    Gray World–based white balance estimation for arbitrary images.
+    Does NOT compare against any reference chart.
+
+    The Gray World assumption says the average colour of a scene should be
+    neutral grey. Deviations from equal R:G:B means indicate a colour cast.
+    """
+    b_mean = float(img[:, :, 0].mean())
+    g_mean = float(img[:, :, 1].mean())
+    r_mean = float(img[:, :, 2].mean())
+
+    rg_ratio = r_mean / g_mean if g_mean > 0 else 1.0
+    bg_ratio = b_mean / g_mean if g_mean > 0 else 1.0
+
+    # Gray World correction gains (normalise to G channel)
+    r_gain = g_mean / r_mean if r_mean > 0 else 1.0
+    b_gain = g_mean / b_mean if b_mean > 0 else 1.0
+
+    # Rough CCT from R/B ratio (same empirical formula used in chart WB)
+    rb_ratio = rg_ratio / bg_ratio if bg_ratio > 0 else 1.0
+    estimated_cct = max(1500.0, min(15000.0, 5000.0 / (rb_ratio ** 0.8)))
+
+    # Cast verdict
+    rg_err = (rg_ratio - 1.0) * 100
+    bg_err = (bg_ratio - 1.0) * 100
+
+    if abs(rg_err) < 5 and abs(bg_err) < 5:
+        cast = "neutral"
+    elif rg_err > 5 and bg_err < -5:
+        cast = "warm (excess red, deficit blue)"
+    elif rg_err < -5 and bg_err > 5:
+        cast = "cool (deficit red, excess blue)"
+    elif rg_err > 5:
+        cast = "slightly warm (excess red)"
+    elif bg_err > 5:
+        cast = "slightly cool (excess blue)"
+    else:
+        cast = "mixed"
+
+    return {
+        "mean_r":          round(r_mean, 2),
+        "mean_g":          round(g_mean, 2),
+        "mean_b":          round(b_mean, 2),
+        "rg_ratio":        round(rg_ratio, 4),
+        "bg_ratio":        round(bg_ratio, 4),
+        "estimated_cast":  cast,
+        "gray_world_correction": {
+            "r_gain": round(r_gain, 4),
+            "g_gain": 1.0,
+            "b_gain": round(b_gain, 4),
+        },
+        "estimated_cct_K": round(estimated_cct, 0),
+    }
+
+
+
+def analyze_color(img, patches_lab=None):
+    """
+    Colour analysis dispatcher.
+    If patches_lab (from a detected ColorChecker) is provided, runs the
+    existing ΔE2000 chart analysis.  Otherwise runs generic colour stats.
+    Every return dict includes 'analysis_mode': 'chart' | 'generic'.
+    """
+    if patches_lab is not None:
+        result = analyze_color_accuracy(patches_lab)
+        result["analysis_mode"] = "chart"
+        return result
+    else:
+        result = analyze_color_generic(img)
+        result["analysis_mode"] = "generic"
+        return result
+
+
+def analyze_tonal(img, patches_lab=None, patches_bgr=None):
+
+    if patches_lab is not None and patches_bgr is not None:
+        result = analyze_tonal_response(patches_lab, patches_bgr)
+        result["analysis_mode"] = "chart"
+        return result
+    else:
+        result = analyze_tonal_generic(img)
+        result["analysis_mode"] = "generic"
+        return result
+
+
+def analyze_wb(img, patches_bgr=None):
+  
+    if patches_bgr is not None:
+        result = analyze_white_balance(patches_bgr)
+        result["analysis_mode"] = "chart"
+        return result
+    else:
+        result = analyze_wb_generic(img)
+        result["analysis_mode"] = "generic"
+        return result
+
+
+def analyze_sharpness_dispatch(img, mtf_patches=None):
+
+    if mtf_patches is not None:
+        # Future: MTF chart-based sharpness analysis
+        # result = analyze_sharpness_mtf(img, mtf_patches)
+        # result["analysis_mode"] = "chart"
+        # return result
+        pass
+
+    result = analyze_sharpness(img)
+    result["analysis_mode"] = "generic"
+    return result
+
+
+# ─────────────────────────────────────────────────────────────────
 # STEP 5 — MAIN PIPELINE
 # ─────────────────────────────────────────────────────────────────
 
 def analyze_chart_photo(image_path):
+
     img = cv2.imread(image_path)
     if img is None:
         raise ValueError(f"Could not load image: {image_path}")
 
-    rectified, _, success = detect_and_rectify_chart(img)
-    # cv2.imwrite("rectified_output.jpg", rectified)
-    # print("Saved rectified_output.jpg")
-    if not success:
-        raise RuntimeError("Could not detect all 4 ArUco markers.")
-
-    patches_bgr, patches_lab = extract_patches(rectified)
+    rectified, _, chart_ok = detect_and_rectify_chart(img)
+    patches_lab = patches_bgr = None
+    target_img = img                      # analyse original image by default
+    if chart_ok:
+        patches_bgr, patches_lab = extract_patches(rectified)
+        target_img = rectified            # use rectified chart for all metrics
 
     return {
-        "sharpness":     analyze_sharpness(rectified),
-        "noise":         estimate_noise(rectified),
-        "dynamic_range": analyze_dynamic_range(rectified),
-        "color_accuracy":analyze_color_accuracy(patches_lab),
-        "blur":          analyze_blur(rectified),       
-        "exposure":      analyze_exposure(rectified),
-        "histogram":     generate_histogram(rectified),
-        "lca":             analyze_lca(rectified),
-        "tonal_response":  analyze_tonal_response(patches_lab, patches_bgr),
-        "white_balance":   analyze_white_balance(patches_bgr),   
+        "sharpness":      analyze_sharpness_dispatch(target_img),
+        "noise":          estimate_noise(target_img),
+        "dynamic_range":  analyze_dynamic_range(target_img),
+        "color_accuracy": analyze_color(target_img, patches_lab),
+        "blur":           analyze_blur(target_img),
+        "exposure":       analyze_exposure(target_img),
+        "histogram":      generate_histogram(target_img),
+        "lca":            analyze_lca(target_img),
+        "tonal_response": analyze_tonal(target_img, patches_lab, patches_bgr),
+        "white_balance":  analyze_wb(target_img, patches_bgr),
     }
 def compute_similarity_from_arrays(img_a, img_b):
     
@@ -779,36 +987,39 @@ def compute_similarity_from_arrays(img_a, img_b):
     }
 
 def compare_two_cameras(image_path_A, image_path_B):
+    
     img_a = cv2.imread(image_path_A)
     img_b = cv2.imread(image_path_B)
 
     rect_a, _, ok_a = detect_and_rectify_chart(img_a)
     rect_b, _, ok_b = detect_and_rectify_chart(img_b)
 
-    if not ok_a or not ok_b:
-        raise RuntimeError("Could not detect chart in one or both images.")
-
-    patches_bgr_a, patches_lab_a = extract_patches(rect_a)
-    patches_bgr_b, patches_lab_b = extract_patches(rect_b)
-
-    def full_metrics(rectified, patches_bgr, patches_lab):
+    def full_metrics(img, rectified, chart_ok):
+        patches_lab = patches_bgr = None
+        target_img = img
+        if chart_ok:
+            patches_bgr, patches_lab = extract_patches(rectified)
+            target_img = rectified
         return {
-            "sharpness":     analyze_sharpness(rectified),
-            "noise":         estimate_noise(rectified),
-            "dynamic_range": analyze_dynamic_range(rectified),
-            "color_accuracy":analyze_color_accuracy(patches_lab),
-            "blur":          analyze_blur(rectified),
-            "exposure":      analyze_exposure(rectified),
-            "histogram":     generate_histogram(rectified),
-            "lca":           analyze_lca(rectified),
-            "tonal_response":analyze_tonal_response(patches_lab, patches_bgr),
-            "white_balance": analyze_white_balance(patches_bgr),
+            "sharpness":      analyze_sharpness_dispatch(target_img),
+            "noise":          estimate_noise(target_img),
+            "dynamic_range":  analyze_dynamic_range(target_img),
+            "color_accuracy": analyze_color(target_img, patches_lab),
+            "blur":           analyze_blur(target_img),
+            "exposure":       analyze_exposure(target_img),
+            "histogram":      generate_histogram(target_img),
+            "lca":            analyze_lca(target_img),
+            "tonal_response": analyze_tonal(target_img, patches_lab, patches_bgr),
+            "white_balance":  analyze_wb(target_img, patches_bgr),
         }
- 
+
+    target_a = rect_a if ok_a else img_a
+    target_b = rect_b if ok_b else img_b
+
     return {
-        "camera_A":  full_metrics(rect_a, patches_bgr_a, patches_lab_a),
-        "camera_B":  full_metrics(rect_b, patches_bgr_b, patches_lab_b),
-        "similarity":compute_similarity_from_arrays(rect_a, rect_b),
+        "camera_A":   full_metrics(img_a, rect_a, ok_a),
+        "camera_B":   full_metrics(img_b, rect_b, ok_b),
+        "similarity": compute_similarity_from_arrays(target_a, target_b),
     }
 def print_comparison(comparison):
     for camera in ["camera_A", "camera_B"]:
@@ -858,17 +1069,11 @@ def print_comparison(comparison):
     for k, v in comparison["similarity"].items():
         print(f"  {k}: {v}")
 
-# ─────────────────────────────────────────────────────────────────
-# SELF-TEST
-# ─────────────────────────────────────────────────────────────────
+
 
 if __name__ == "__main__":
     import json, sys
 
-    # path = sys.argv[1] if len(sys.argv) > 1 else "colorchecker_chart.png"
-    # print(f"Analysing: {path}\n")
-
-    # result = analyze_chart_photo(path)
     if len(sys.argv) == 2:
         path = sys.argv[1]
         result = analyze_chart_photo(path)

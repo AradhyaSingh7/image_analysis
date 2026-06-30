@@ -18,13 +18,13 @@ from flask_cors import CORS
 from analyze_chart import (
     analyze_blur,
     analyze_chart_photo,
-    analyze_color_accuracy,
+    analyze_color,
     analyze_dynamic_range,
     analyze_exposure,
     analyze_lca,
-    analyze_sharpness,
-    analyze_tonal_response,
-    analyze_white_balance,
+    analyze_sharpness_dispatch,
+    analyze_tonal,
+    analyze_wb,
     compute_similarity_from_arrays,
     detect_and_rectify_chart,
     estimate_noise,
@@ -70,35 +70,32 @@ def _save_temp(file_storage) -> str:
 def _analyze_single(image_path: str) -> dict:
     """
     Run all metrics on a single image.
-    Color-accuracy is only populated if chart detection succeeds.
+    Chart-dependent metrics (color, tonal, white balance) automatically
+    fall back to generic reference-free analysis when no chart is detected.
     """
     img = cv2.imread(image_path)
     if img is None:
         raise ValueError(f"Could not decode image: {image_path}")
 
-    result = {
-        "sharpness":      analyze_sharpness(img),
+    # Attempt chart detection — dispatchers handle the fallback
+    rectified, _, chart_ok = detect_and_rectify_chart(img)
+    patches_lab = patches_bgr = None
+    if chart_ok:
+        patches_bgr, patches_lab = extract_patches(rectified)
+
+    return {
+        "sharpness":      analyze_sharpness_dispatch(img),
         "noise":          estimate_noise(img),
         "exposure":       analyze_exposure(img),
         "dynamic_range":  analyze_dynamic_range(img),
         "blur":           analyze_blur(img),
-        "color_accuracy": None,   # populated below if chart detected
         "histogram":      generate_histogram(img),
         "lca":            analyze_lca(img),
-        # chart-dependent metrics default to None
-        "tonal_response": None,
-        "white_balance":  None,
+        # Dispatchers — chart-based or generic automatically
+        "color_accuracy": analyze_color(img, patches_lab),
+        "tonal_response": analyze_tonal(img, patches_lab, patches_bgr),
+        "white_balance":  analyze_wb(img, patches_bgr),
     }
-
-    # Attempt chart detection — gracefully skip if markers not found
-    rectified, _, chart_ok = detect_and_rectify_chart(img)
-    if chart_ok:
-        patches_bgr, patches_lab = extract_patches(rectified)
-        result["color_accuracy"]  = analyze_color_accuracy(patches_lab)
-        result["tonal_response"]  = analyze_tonal_response(patches_lab, patches_bgr)
-        result["white_balance"]   = analyze_white_balance(patches_bgr)
-
-    return result
 
 
 # ─────────────────────────────────────────────────────────────────

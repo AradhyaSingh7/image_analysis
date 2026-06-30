@@ -1,5 +1,26 @@
 import './views.css';
 
+/* ── Shared components ──────────────────────────────────────────── */
+
+function AnalysisModeBadge({ mode }) {
+  const isChart = mode === 'chart';
+  const color = isChart ? '#4ade80' : '#60a5fa';
+  const label = isChart ? '◈ Chart Gamma' : '◎ Generic Stats';
+  return (
+    <span className="verdict-chip" style={{
+      background: `${color}15`,
+      border: `1px solid ${color}40`,
+      color,
+      fontSize: '0.55rem',
+      whiteSpace: 'nowrap',
+    }}>
+      {label}
+    </span>
+  );
+}
+
+/* ── Chart-mode components (existing) ───────────────────────────── */
+
 /** Tiny SVG ring gauge for gamma */
 function GammaArc({ gamma, color }) {
   // Gamma expected range: 0.2 – 0.8 (typical camera encoding)
@@ -142,9 +163,9 @@ function VerdictBadge({ verdict }) {
   );
 }
 
-export default function TonalResponseView({ refData, testData }) {
+function ChartTonalView({ refData, testData }) {
   return (
-    <div className="metric-view">
+    <>
       {/* Hero: gamma arcs */}
       <div className="metric-view__hero">
         <div className="hero-stat hero-stat--ref">
@@ -230,6 +251,146 @@ export default function TonalResponseView({ refData, testData }) {
         standard sRGB-like encoding (display gamma ≈ 2.2). The tonal curve shows measured pixel
         brightness vs reference L* — a perfect camera lies on the dashed diagonal.
       </p>
+    </>
+  );
+}
+
+/* ── Generic-mode components (new) ──────────────────────────────── */
+
+function BrightnessGauge({ value, label, color }) {
+  const pct = Math.min((value / 255) * 100, 100);
+  const verdict = value < 60 ? 'Dark' : value < 100 ? 'Low' : value < 170 ? 'Balanced' : value < 210 ? 'Bright' : 'Overexposed';
+  const vColor = value < 60 ? '#60a5fa' : value < 100 ? '#93c5fd' : value < 170 ? '#4ade80' : value < 210 ? '#facc15' : '#f87171';
+  return (
+    <div className="delta-gauge">
+      <div className="delta-gauge__ring">
+        <svg viewBox="0 0 80 80" width="80" height="80">
+          <circle cx="40" cy="40" r="32" fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth="6" />
+          <circle
+            cx="40" cy="40" r="32" fill="none"
+            stroke={color} strokeWidth="6"
+            strokeLinecap="round"
+            strokeDasharray={`${(pct / 100) * (2 * Math.PI * 32)} ${2 * Math.PI * 32}`}
+            strokeDashoffset={2 * Math.PI * 32 * 0.25}
+            style={{ transition: 'stroke-dasharray 800ms ease', opacity: 0.75 }}
+          />
+          <text x="40" y="43" textAnchor="middle" fill={color} fontSize="12" fontWeight="700" fontFamily="var(--font-mono)">
+            {value.toFixed(1)}
+          </text>
+        </svg>
+      </div>
+      <span className="delta-gauge__label">{label}</span>
+      <span className="delta-gauge__verdict" style={{ color: vColor }}>{verdict}</span>
+    </div>
+  );
+}
+
+function GenericStat({ label, value, unit = '' }) {
+  return (
+    <div style={{
+      display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+      padding: '5px 8px',
+      background: 'rgba(255,255,255,0.02)',
+      borderRadius: 'var(--radius-sm)',
+      fontSize: '0.62rem',
+    }}>
+      <span style={{ color: 'var(--text-tertiary)', fontWeight: 650, textTransform: 'uppercase', letterSpacing: '0.04em' }}>{label}</span>
+      <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 700, color: 'var(--text-primary)' }}>
+        {typeof value === 'number' ? value.toFixed(2) : value}{unit}
+      </span>
+    </div>
+  );
+}
+
+function ZoneBar({ shadow, midtone, highlight }) {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+      <span style={{ fontSize: '0.55rem', fontWeight: 650, color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+        Tonal distribution
+      </span>
+      <div style={{
+        display: 'flex', height: 10, borderRadius: 999, overflow: 'hidden',
+        border: '1px solid rgba(255,255,255,0.08)',
+      }}>
+        <div style={{ width: `${shadow}%`, background: '#3b82f6', transition: 'width 0.4s ease' }} title={`Shadows: ${shadow.toFixed(1)}%`} />
+        <div style={{ width: `${midtone}%`, background: '#a78bfa', transition: 'width 0.4s ease' }} title={`Midtones: ${midtone.toFixed(1)}%`} />
+        <div style={{ width: `${highlight}%`, background: '#fbbf24', transition: 'width 0.4s ease' }} title={`Highlights: ${highlight.toFixed(1)}%`} />
+      </div>
+      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.5rem', color: 'var(--text-tertiary)', fontFamily: 'var(--font-mono)' }}>
+        <span>◼ Shadows {shadow.toFixed(1)}%</span>
+        <span>◼ Midtones {midtone.toFixed(1)}%</span>
+        <span>◼ Highlights {highlight.toFixed(1)}%</span>
+      </div>
+    </div>
+  );
+}
+
+function GenericTonalPanel({ data, label, color }) {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 10, flex: 1 }}>
+      <span style={{ fontSize: '0.6rem', fontWeight: 650, textTransform: 'uppercase', letterSpacing: '0.06em', color }}>
+        {label}
+      </span>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+        <GenericStat label="Brightness σ" value={data.brightness_std} />
+        <GenericStat label="Michelson contrast" value={data.contrast_michelson} />
+        <GenericStat label="RMS contrast" value={data.rms_contrast} />
+        <GenericStat label="Histogram entropy" value={data.histogram_entropy} unit=" bits" />
+        <GenericStat label="Dynamic range" value={data.dynamic_range_estimate} />
+      </div>
+      <ZoneBar shadow={data.shadow_pct} midtone={data.midtone_pct} highlight={data.highlight_pct} />
+    </div>
+  );
+}
+
+function GenericTonalView({ refData, testData }) {
+  return (
+    <>
+      <div className="metric-view__gauges">
+        <BrightnessGauge value={refData.mean_brightness} label="Ref Brightness" color="var(--color-ref)" />
+        <BrightnessGauge value={testData.mean_brightness} label="Test Brightness" color="var(--color-test)" />
+      </div>
+
+      <div style={{
+        display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16,
+        padding: 14,
+        background: 'rgba(255,255,255,0.02)',
+        border: '1px solid rgba(255,255,255,0.05)',
+        borderRadius: 'var(--radius-md)',
+      }}>
+        <GenericTonalPanel data={refData} label="Reference" color="var(--color-ref)" />
+        <GenericTonalPanel data={testData} label="Test" color="var(--color-test)" />
+      </div>
+
+      <p className="metric-view__hint">
+        Generic tonal analysis — no ColorChecker detected. Brightness is measured on the grayscale
+        image (0–255). Michelson contrast = (max−min)/(max+min). Histogram entropy measures tonal
+        distribution complexity (higher = more spread). Shadow/midtone/highlight zones show pixel distribution.
+      </p>
+    </>
+  );
+}
+
+/* ── Main export ────────────────────────────────────────────────── */
+
+export default function TonalResponseView({ refData, testData }) {
+  if (!refData || !testData) return null;
+
+  const refMode = refData.analysis_mode;
+  const testMode = testData.analysis_mode;
+  const isChart = refMode === 'chart' && testMode === 'chart';
+
+  return (
+    <div className="metric-view">
+      <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
+        <AnalysisModeBadge mode={refMode} />
+        {refMode !== testMode && <AnalysisModeBadge mode={testMode} />}
+      </div>
+
+      {isChart
+        ? <ChartTonalView refData={refData} testData={testData} />
+        : <GenericTonalView refData={refData} testData={testData} />
+      }
     </div>
   );
 }
